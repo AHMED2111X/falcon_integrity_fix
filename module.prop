@@ -1,11 +1,11 @@
 id=falcon_integrity_fix
 name=FALCON INTEGRITY FIX
-version=v3.28
-versionCode=134
+version=v3.28.1
+versionCode=135
 author=ABUFARID | Telegram:@falcon_kernel
-description=Play Integrity fix for Magisk / KernelSU / KernelSU Next / APatch. TrickyStore OSS keystore engine, bundled keybox, PlayIntegrityFork fingerprint spoofing, app hiding and the FALCON TRICKY Web UI. Android 10-17.
+description=🟢 Zygisk Ready | 🎭 PIF + 🔐 Tricky Store OSS v3.1.0 | 🩺 RKP Auto-Fix | 🗑️ حذف قسري لأي إضافة TrickyStore قديمة | 🖥️ واجهة موحّدة عبر FALCON TRICKY | 🧰 كيبوكس ذكي (منفذان: أساسي + ثانوي + تبديل تلقائي) | 📥 جلب كيبوكس صالح (3 أخضر) مع رفض المُبطل | 🔓 SELinux موسّع (كل الأجهزة) | 🕵️ إخفاء ملفات الكيبوكس | 📱 يدعم Android 10-17 | 🛠️ يعمل مع جميع أسماء الروت: KernelSU · KernelSU Next · Magisk · APatch | 👤 Online: --
 banner=banner.png
 actionIcon=icon.png
 webuiIcon=icon.png
-updateJson=https://raw.githubusercontent.com/AHMED2111X/AHMED2111X/main/update.json
+updateJson=https://raw.githubusercontent.com/AHMED2111X/falcon_integrity_fix/main/update.json
 zygisk=true
