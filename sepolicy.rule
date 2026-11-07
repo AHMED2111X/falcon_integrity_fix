@@ -1,0 +1,38 @@
+# ==============================================================================
+# FALCON INTEGRITY FIX - قواعد وسياسات SELinux (v3.28)
+# المطور: ABUFARID | تليجرام: @falcon_kernel
+# ==============================================================================
+# الهدف: تمكين محرك التعتيد (keystore2) من قراءة ملفات الوحدة على جميع
+# الأجهزة - بما فيها那些 التي تفرض سياسة SELinux مشدّدة (Samsung / Realme /
+# Xiaomi / بعض نسخ ColorOS و EMUI).
+#
+# المشكلة التي تحلّها هذه القواعد:
+#   process keystore2 يعمل ضمن نطاق SELinux باسم "keystore". عند policies
+#   المشدّدة لا يُسمح له بقراءة ملفات الوحدة (المُوسَمة system_file)، فيفشل
+#   تحميل libTrickyStoreOSS.so بصمت → يبقى الملف بلا محرك → "الكيبوكس معطّل".
+#
+# ملاحظة: النطاق "keystore" و"gmscore_app" و"platform_app" محدود بالعمليات
+# الأساسية للنظام فقط. لم يُضَف untrusted_app (= أي تطبيق يقرأ أي ملف نظام)
+# لأنه توسّع كبير في الصلاحيات لا نحتاجه لعمل الوحدة.
+
+# 1) محرك التعتيد: قراءة ملفات الوحدة (classes.dex / libTrickyStoreOSS.so / keybox)
+allow keystore system_file file *
+
+# 2) الاتصال بين عملية الحقن (root) وkeystore2 عبر unix_dgram_socket
+allow keystore system_file unix_dgram_socket *
+allow system_file keystore unix_dgram_socket *
+
+# 3) Google Play Services تقرأ ملفات الوحدة (بصمة مزyf + keybox) لتمرير التحقق
+allow gmscore_app system_file file { read execute open }
+
+# 4) تطبيقات المنصة (SystemUI / Settings) تقرأ ملفات الوحدة
+allow platform_app system_file file { read execute open }
+
+# 5) أداة انهيار النظام تقرأ عملية keystore (لالتقاط الحقن)
+allow crash_dump keystore process *
+
+# 6) [الحل الأخير - بطلب المستخدم] التطبيقات غير الموثوقة تقرأ ملفات النظام
+#    تنبيه أمني: هذه القاعدة تمنح كل تطبيق مثبت حق قراءة وتنفيذ أي ملف
+#    نظامي (system_file). استُخدمت لتجاوز سياسات SELinux المشدّدة على
+#    أجهزة لا تقبل ENGINE_ONLY. تُضعف عزل التطبيقات — فعّلها عند الضرورة فقط.
+allow untrusted_app system_file file { read execute open }

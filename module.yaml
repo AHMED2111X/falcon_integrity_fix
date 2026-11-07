@@ -1,0 +1,5 @@
+schemaVersion: 1
+id: falcon_integrity_fix
+name: FALCON INTEGRITY FIX
+summary: Play Integrity fix with Tricky Store OSS, dual keybox slots, RKP/SOTER fixes and a full WebUI companion — Android 10-17, works with KernelSU / KernelSU Next / Magisk / APatch
+description: README.md
