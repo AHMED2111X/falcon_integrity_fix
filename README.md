@@ -1,15 +1,23 @@
 # FALCON INTEGRITY FIX
 
-Magisk / KernelSU / KernelSU Next / APatch module that fixes Play Integrity.
-Works on Android 10 to 17.
+**v3.29 · versionCode 137** — a Magisk / KernelSU / KernelSU Next / APatch module
+that fixes Play Integrity on Android 10 to 17.
+
+[![Latest release](https://img.shields.io/github/v/release/AHMED2111X/falcon_integrity_fix?style=flat-square&label=release)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/latest)
+[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.29.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.29/FALCONINTEGITY_FIX_V3.29.zip)
+[![Telegram](https://img.shields.io/badge/Telegram-@FALCON_KERNEL_PRO-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FALCON_KERNEL_PRO)
 
 ## What it does
 
 * Hooks the keystore with [TrickyStore OSS](https://github.com/beakthoven/TrickyStoreOSS)
   so hardware attestation uses a real certificate chain instead of a software one.
-* Ships a working keybox, so the module is useful straight after install.
+* Ships a working keybox. On every install or update the module backs up and
+  wipes `/data/adb/tricky_store`, then forces the bundled keybox on the active
+  path and the primary slot. Boot never overwrites a valid custom keybox.
 * Keeps the spoofed build fingerprint in sync with Google's current Pixel build.
 * Spots apps that call the integrity API and hides the module from them.
+* Detects conflicting TrickyStore / Play Integrity modules without deleting or
+  disabling them, and reports keybox status in the notification.
 * Optional Widevine L1 fix for unlocked Qualcomm devices.
 
 Two separate modules are involved. This repository is the module itself.
@@ -21,9 +29,21 @@ Two separate modules are involved. This repository is the module itself.
 
 ## Download
 
-Releases are attached to this repository. The file is
-`FALCONINTEGITY_FIX_V<version>.zip`. Flash it from your root manager, then
-reboot.
+| | |
+| --- | --- |
+| Latest version | **v3.29** — `versionCode 137` |
+| Download | [`FALCONINTEGITY_FIX_V3.29.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.29/FALCONINTEGITY_FIX_V3.29.zip) |
+| Release notes | [v3.29 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.29) |
+| Telegram | [@FALCON_KERNEL_PRO](https://t.me/FALCON_KERNEL_PRO) |
+
+Flash the ZIP from Magisk, KernelSU, KernelSU Next or APatch, then reboot.
+
+Devices on **v3.29 / 136** (or any older build) see **v3.29 / 137** as an update:
+root managers read [`update.json`](https://raw.githubusercontent.com/AHMED2111X/falcon_integrity_fix/main/update.json)
+from `main`.
+
+The bundled keybox expires on **13-11-2026**. After that date use the
+fetch/update button in the module or wait for a new release.
 
 ## Source
 
@@ -44,8 +64,9 @@ from and what its licence is.
 | `busybox` | [BusyBox](https://busybox.net) | GPL-2.0 |
 | `falcon_tricky/webroot/**` | this repository | GPL-3.0 |
 
-`lib/` (the TEE-Simulator libraries) is **not** part of this release. The
-keystore engine used here is TrickyStoreOSS, which is what `tricky/` holds.
+The TEE-Simulator libraries are **not** part of this release. The `lib/` folder
+only holds the shared conflict and PIF-preference helpers used by the installer,
+and the keystore engine itself is TrickyStoreOSS, which is what `tricky/` holds.
 
 ### Reproducing the build
 
@@ -68,12 +89,16 @@ releases:
 | Path | What it is |
 | --- | --- |
 | `module.prop` | module metadata, `id=falcon_integrity_fix` |
+| `update.json` | update manifest read by Magisk / KernelSU managers |
 | `customize.sh` | installer: stages files, backs up and wipes `/data/adb/tricky_store`, forces the bundled keybox |
 | `post-fs-data.sh` | early boot, before GMS starts |
 | `service.sh` | main service, starts the keystore engine and refreshes the fingerprint |
 | `action.sh` | the Action button, full refresh on demand |
 | `kb_sync.sh` | keybox fetcher, checks Google's revocation list before installing |
 | `falcon_keybox.sh` | manages the keybox slot and the copies kept under `/data/adb/falcon` |
+| `falcon_kbnotify.sh` | keybox status notifications |
+| `falcon_integrity_diag.sh` | on-device diagnostics report |
+| `config/`, `lib/` | conflict rules and shared installer helpers |
 | `falcon_tricky/` | the FALCON TRICKY Web UI, installed as its own module |
 | `sepolicy.rule` | SELinux rules the keystore engine needs to read the module files |
 
