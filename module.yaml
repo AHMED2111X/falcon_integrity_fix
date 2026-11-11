@@ -1,5 +1,5 @@
 schemaVersion: 1
 id: falcon_integrity_fix
 name: FALCON INTEGRITY FIX
-summary: Play Integrity fix that hooks the keystore with TrickyStore OSS, forces the bundled keybox on every install/update (with a full backup), and keeps the spoofed Pixel fingerprint fresh. Android 10-17, Magisk / KernelSU / KernelSU Next / APatch. Latest: v3.29 / 137.
+summary: Play Integrity fix that hooks the keystore with TrickyStore OSS, forces the bundled keybox on every install/update (with a full backup), and keeps the spoofed Pixel fingerprint fresh. Android 10-17, Magisk / KernelSU / KernelSU Next / APatch. Latest release is v3.29 / 137.
 description: README.md
