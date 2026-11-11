@@ -9,37 +9,19 @@
 MODPATH="${0%/*}"
 MODDIR="$MODPATH"
 
-# --- ربط وحدة FALCON TRICKY المرئية (رابط مزدوج: حذف أحدهما يحذف الآخر) ---
-# إذا أزال المستخدم وحدة FALCON TRICKY من مدير الروت فنعلّم أنفسنا للحذف
-# أيضاً حتى يختفي الاثنان معاً بعد إعادة التشغيل.
-# نراقب المسارين (modules + modules_update) ونكشف الغياب التام للملحق أيضاً.
-# أمان: لا نُعلّم أنفسنا للحذف بسبب غياب الملحق إلا إن سبق أن ثُبّت الملحق فعلاً
-# (علامة /data/adb/falcon/.ft_linked يُنشئها customize.sh بعد نجاح النسخ)،
-# حتى لا يحذف المحرك نفسه أبداً بسبب تركيب ناقص أو فاشل.
-FT_FOUND=0
-for B in /data/adb/modules /data/adb/modules_update; do
-    if [ -d "$B/falcon_tricky" ]; then
-        FT_FOUND=1
-        if [ -f "$B/falcon_tricky/remove" ]; then
-            touch "$MODDIR/remove" 2>/dev/null
-        fi
-    fi
-done
-if [ "$FT_FOUND" = "0" ] && [ -f /data/adb/falcon/.ft_linked ]; then
-    touch "$MODDIR/remove" 2>/dev/null
-fi
+# --- (v3.29) حُذف منطق "الرابط المزدوج" الذي كان يضع علامة remove على وحدتنا
+#     عند حذف FALCON TRICKY. هذا المنطق هو ما يجعل مدير الروت (KernelSU Next)
+#     يعرض تنبيه قاعدة الأمان. الآن كل وحدة تُدار من مدير الروت مباشرة بلا تداخل.
 
-# --- (v3.15 + توسيع v3.19) مسح وقائي عند كل إقلاع: أي وحدة/إضافة تخص TrickyStore
-# أو SafetyNet أو أي محرك تعتيد/تزييف متعارض (Specter / Yurikey / TEESimulator /
-# IntegrityBox / TA-enhanced / MagiskHidePropsConf / AlwaysStrong …).
-# يمنع الحقن المزدوج في keystore2 لو ثبّت المستخدم محركاً مستقلاً أو ملحقاً
-# (WebUI) بعدنا. الكشف لا يعتمد على اسم المجلد وحده: نقرأ أيضاً module.prop
-# (id / name / description) حتى تُلتقط الملاحق بأي تسمية.
-# يستثني وحدتينا صراحةً: falcon_integrity_fix و falcon_tricky.
-# ⛔ ولا يمس /data/adb/tricky_store (كيبوكس المستخدم + target.txt).
+# --- (v3.29) كشف المديولات المتعارضة — قراءة فقط (بلا حذف/تعطيل) ---
+# النسخ السابقة كانت تحذف أو تُعطّل وحدات التعتيد الأخرى عند كل إقلاع،
+# وهذا يجعل مدير الروت يرفع تنبيه "تعطيل وحدات أخرى" ويوقف التثبيت.
+# الآن: كشف + تسجيل + تنبيه في الوصف فقط، والقرار للمستخدم.
+# ⛔ لا نحذف ولا نعطّل أي مديول آخر. مسار Tricky Store يُدار عبر falcon_keybox.sh فقط.
 # (v3.21) النمط المتعارض مجزَّأ عبر متغيرين — المطابقة النهائية كما هي بالضبط.
 IB_A='integrity'
 IB_B='box'
+CONFLICT_TAG=""
 for RBASE in /data/adb/modules /data/adb/modules_update; do
     [ -d "$RBASE" ] || continue
     for RDIR in "$RBASE"/*; do
@@ -47,14 +29,15 @@ for RBASE in /data/adb/modules /data/adb/modules_update; do
         RNAME="${RDIR##*/}"
         case "$RNAME" in
             falcon_integrity_fix|falcon_tricky) continue ;;
+            # مرآة المحرك التي ننشئها نحن (بلا module.prop) — ليست وحدة متعارضة
             playintegrityfix) [ -f "$RDIR/module.prop" ] || continue ;;
         esac
         RINFO="$RNAME"
         if [ -f "$RDIR/module.prop" ]; then
-            RINFO="$RINFO $(grep -i -e '^id=' -e '^name=' -e '^description=' "$RDIR/module.prop" 2>/dev/null)"
+            RINFO="$RINFO $(grep -i -e '^id=' -e '^name=' "$RDIR/module.prop" 2>/dev/null)"
         fi
         RLOW=$(printf '%s' "$RINFO" | tr 'A-Z' 'a-z' 2>/dev/null)
-        # حماية ذاتية: لا نمس وحدتينا حتى لو أُعيد تسمية المجلد
+        # حماية ذاتية: لا نلمس وحدتينا حتى لو أُعيد تسمية المجلد
         case "$RLOW" in
             *"id=falcon_integrity_fix"*|*"id=falcon_tricky"*) continue ;;
         esac
@@ -64,18 +47,10 @@ for RBASE in /data/adb/modules /data/adb/modules_update; do
             *ta_utl*|*ta_enhanced*|*ta-enhanced*|*magiskhideprops*|*alwaysstrong*) ;;
             *) continue ;;
         esac
-        [ -f "$RDIR/remove" ] && continue
-        case "$RBASE" in
-            */modules_update)
-                # (v3.19) نسخة مرحّلة لم تُثبَّت بعد ⇒ نحذفها الآن حتى لا تُثبَّت عند الإقلاع القادم
-                rm -rf "$RDIR" 2>/dev/null
-                echo "$(date '+%Y-%m-%d %H:%M:%S') 🗑️ حُذفت نسخة مرحّلة لموديول متعارض (modules_update): $RNAME" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
-                ;;
-            *)
-                touch "$RDIR/disable" "$RDIR/remove" 2>/dev/null
-                echo "$(date '+%Y-%m-%d %H:%M:%S') 🗑️ وحدة تعتيد متعارضة مُعطَّلة ومعلَّمة للحذف: $RNAME" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
-                ;;
-        esac
+        if [ -z "$CONFLICT_TAG" ]; then
+            CONFLICT_TAG="⚠️ Conflict: $RNAME | "
+        fi
+        echo "$(date '+%Y-%m-%d %H:%M:%S') ℹ️ مديول تعتيد متعارض موجود (لم يُمسّ): $RNAME" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
     done
 done
 
@@ -301,7 +276,13 @@ fi
 # احتياطي: لا ننسخ المرفق إلا عند غياب ملف نشط صالح فعلاً.
 if [ ! -s /data/adb/tricky_store/keybox.xml ] || \
    ! grep -q "<AndroidAttestation" /data/adb/tricky_store/keybox.xml 2>/dev/null; then
-    [ -s "$MODDIR/keybox.xml" ] && cp -f "$MODDIR/keybox.xml" /data/adb/tricky_store/keybox.xml 2>/dev/null
+    if [ -s "$MODDIR/keybox.xml" ]; then
+        cp -f "$MODDIR/keybox.xml" /data/adb/tricky_store/keybox.xml 2>/dev/null
+        mkdir -p /data/adb/falcon 2>/dev/null
+        printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+        chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+        chown root:root /data/adb/falcon/.token_source 2>/dev/null
+    fi
 fi
 if [ ! -s /data/adb/tricky_store/target.txt ] && [ -s "$MODDIR/target.txt" ]; then
     cp -f "$MODDIR/target.txt" /data/adb/tricky_store/target.txt 2>/dev/null
@@ -358,11 +339,21 @@ if ! keybox_valid "$USER_KEYBOX"; then
         return 1
     }
     # (v3.23) تجاهل كيبوكس الإضافة (الحالي أو اللقطة القديمة) عند التبنّي.
+    # فحص مسارات الإصدار القديم يمنع تبنّي نسخة من مرفق سابق ككيبوكس مخصص.
     falcon_kb_bundle() {
+        local P
         [ -n "$1" ] || return 1
-        [ -n "$BUNDLED_SRC" ] && cmp -s "$1" "$BUNDLED_SRC" 2>/dev/null && return 0
-        [ -s "$BUNDLE_COPY" ] && cmp -s "$1" "$BUNDLE_COPY" 2>/dev/null && return 0
-        [ -s "$MODDIR/zygisk/keybox.xml" ] && cmp -s "$1" "$MODDIR/zygisk/keybox.xml" 2>/dev/null && return 0
+        for P in \
+            "$BUNDLED_SRC" \
+            "$BUNDLE_COPY" \
+            "$MODDIR/keybox.xml" \
+            "$MODDIR/zygisk/keybox.xml" \
+            /data/adb/modules/falcon_integrity_fix/keybox.xml \
+            /data/adb/modules/falcon_integrity_fix/zygisk/keybox.xml \
+            /data/adb/modules_update/falcon_integrity_fix/keybox.xml \
+            /data/adb/modules_update/falcon_integrity_fix/zygisk/keybox.xml; do
+            [ -s "$P" ] && cmp -s "$1" "$P" 2>/dev/null && return 0
+        done
         return 1
     }
     falcon_kb_copy() {
@@ -371,6 +362,10 @@ if ! keybox_valid "$USER_KEYBOX"; then
         falcon_kb_ours "$1" && return 1
         falcon_kb_bundle "$1" && return 1
         cp -f "$1" "$USER_KEYBOX" 2>/dev/null || return 1
+        # كيبوكس خارجي (من إضافة قديمة/ذاكرة الهاتف) ⇒ مخصص
+        printf 'custom\n' > /data/adb/falcon/.token_source 2>/dev/null
+        chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+        chown root:root /data/adb/falcon/.token_source 2>/dev/null
         return 0
     }
     for D in /data/adb/modules /data/adb/modules_update; do
@@ -416,6 +411,9 @@ if ! keybox_valid "$TS_KEYBOX"; then
     elif [ -n "$BUNDLED_SRC" ]; then
         cp -f "$BUNDLED_SRC" "$TS_KEYBOX" 2>/dev/null
         cp -f "$BUNDLED_SRC" "$BUNDLE_COPY" 2>/dev/null
+        printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+        chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+        chown root:root /data/adb/falcon/.token_source 2>/dev/null
         log -t "FALCON_FIX" "🔑 [احتياطي] كيبوكس الإضافة مطبّق."
     fi
 fi
@@ -828,10 +826,52 @@ falcon_parse_count() {
             BL_STATUS="🔴 BL Unspoofed"
         fi
 
-        # (v3.22.9) مؤشر الكيبوكس 🔑 نقل إلى وصف FALCON TRICKY — وصفنا بلا 🔑
+        # (v3.22.9) مؤشر الكيبوكس 🔑
+        # (v3.29) تاريخ انتهاء الكيبوكس يظهر دائماً في وصف الوحدة (حتى عند السلامة)،
+        #         ويُسبَق بتحذير واضح عند الإبطال/الانتهاء/قرب الانتهاء.
+        KB_ALERT=""
+        KB_TAG=""
+        _kba=""
+        _kbe=""
+        if [ -s /data/adb/falcon_keysync/kb_alert ]; then
+            _kba=$(head -n 1 /data/adb/falcon_keysync/kb_alert 2>/dev/null | cut -d'|' -f1 | tr -d ' \t\r\n')
+            _kbe=$(head -n 1 /data/adb/falcon_keysync/kb_alert 2>/dev/null | cut -d'|' -f2 | tr -d ' \t\r\n')
+        fi
+        case "$_kbe" in
+            ''|unknown|UNKNOWN)
+                [ -s /data/adb/falcon_keysync/kb_expiry_cache ] && \
+                    _kbe=$(head -n 1 /data/adb/falcon_keysync/kb_expiry_cache 2>/dev/null | cut -d'|' -f1 | tr -d ' \t\r\n')
+                ;;
+        esac
+        # (v3.29) احتياطي أخير: التاريخ المكتوب وقت التثبيت داخل مجلد الوحدة
+        case "$_kbe" in
+            ''|unknown|UNKNOWN)
+                if [ -s "$MODDIR/kb_expiry.txt" ]; then
+                    _kbe=$(head -n 1 "$MODDIR/kb_expiry.txt" 2>/dev/null | tr -d ' \t\r\n')
+                fi
+                ;;
+        esac
+        case "$_kbe" in ''|unknown|UNKNOWN) _kbe="" ;; esac
+        if [ -z "$_kba" ] && [ -s /data/adb/falcon_keysync/kb_state ]; then
+            _kba=$(head -n 1 /data/adb/falcon_keysync/kb_state 2>/dev/null | tr -d ' \t\r\n')
+        fi
+        if [ -n "$_kbe" ]; then __KBEXP=" (exp: $_kbe)"; else __KBEXP=""; fi
+        case "$_kba" in
+            REVOKED)   KB_ALERT="🔴 Keybox Revoked${__KBEXP} | " ;;
+            FAIL)      KB_ALERT="🟠 No Valid Keybox${__KBEXP} | " ;;
+            EXPIRED)   KB_ALERT="⛔ Keybox Expired${__KBEXP} | " ;;
+            EXPIRING)  KB_ALERT="⏳ Keybox Expiring${__KBEXP} | " ;;
+            *)
+                if [ -n "$_kbe" ]; then
+                    KB_TAG="Keybox OK${__KBEXP} | "
+                elif [ -s /data/adb/tricky_store/keybox.xml ]; then
+                    KB_TAG="Keybox OK | "
+                fi
+                ;;
+        esac
         # قراءة العدد النشط مباشرة من الملف الكاش المحدث
         ONLINE_USERS=$(cat "$COUNT_CACHE_FILE" 2>/dev/null || printf '%s\n' "0")
-        NEW_DESC="$ZYGISK_STATUS | $BL_STATUS | 👤 Online: $ONLINE_USERS"
+        NEW_DESC="${KB_ALERT}${KB_TAG}${CONFLICT_TAG}$ZYGISK_STATUS | $BL_STATUS | 👤 Online: $ONLINE_USERS"
 
         MODULE_PROP="$MODDIR/module.prop"
 

@@ -17,27 +17,9 @@
 # ==============================================================================
 
 MODDIR="${0%/*}"
-MAIN_ID="falcon_integrity_fix"
-MAIN_FOUND=0
 
-# 1) نراقب الإضافة الأم في المسارين (modules + modules_update):
-#    إن وُجدت معلَّمة للحذف (remove) → نعلّم أنفسنا للحذف فوراً.
-for B in /data/adb/modules /data/adb/modules_update; do
-    if [ -d "$B/$MAIN_ID" ]; then
-        MAIN_FOUND=1
-        if [ -f "$B/$MAIN_ID/remove" ]; then
-            touch "$MODDIR/remove" 2>/dev/null
-            exit 0
-        fi
-    fi
-done
-
-# 2) إذا اختفت الإضافة الأم تماماً → نزيل أنفسنا حتى لا يبقى ملحق يتيم.
-#    (لا يُستخدم الملحق أبداً بدون الإضافة الأم)
-if [ "$MAIN_FOUND" = "0" ]; then
-    touch "$MODDIR/remove" 2>/dev/null
-    exit 0
-fi
+# (v3.29) حُذف منطق الإزالة الذاتية (touch remove) الذي كان يُفعّل تنبيه
+# قاعدة الأمان في KernelSU Next. الوحدة تُدار من مدير الروت مباشرة.
 
 # 3) (v3.22.9) تحديث وصف FALCON TRICKY في مدير الروت — نفس بيانات الواجهة:
 #    ⚙️ حالة المحرك | حماية Google X/3 | 🔑 حالة الكيبوكس (بلا 👤 Online)
@@ -56,18 +38,56 @@ while true; do
     done
 
     KB_TAG=""
-    if [ -s /data/adb/falcon_keysync/kb_state ]; then
-        KB_ST=$(head -n 1 /data/adb/falcon_keysync/kb_state 2>/dev/null | tr -d ' \t\r\n')
-        case "$KB_ST" in
-            OK*) KB_TAG="🔑 KB OK" ;;
-            REVOKED*) KB_TAG="🔑 KB REVOKED" ;;
-        esac
+    _kba=""
+    _kbe=""
+    if [ -s /data/adb/falcon_keysync/kb_alert ]; then
+        _kba=$(head -n 1 /data/adb/falcon_keysync/kb_alert 2>/dev/null | cut -d'|' -f1 | tr -d ' \t\r\n')
+        _kbe=$(head -n 1 /data/adb/falcon_keysync/kb_alert 2>/dev/null | cut -d'|' -f2 | tr -d ' \t\r\n')
+    fi
+    # (v3.29) احتياطي: تاريخ الانتهاء المحفوظ مؤقتاً (إن كان الحقل الثاني غير معروف)
+    case "$_kbe" in
+        ''|unknown|UNKNOWN)
+            if [ -s /data/adb/falcon_keysync/kb_expiry_cache ]; then
+                _kbe=$(head -n 1 /data/adb/falcon_keysync/kb_expiry_cache 2>/dev/null | cut -d'|' -f1 | tr -d ' \t\r\n')
+            fi
+            ;;
+    esac
+    # (v3.29) احتياطي أخير: التاريخ المكتوب وقت التثبيت داخل مجلد الوحدة
+    case "$_kbe" in
+        ''|unknown|UNKNOWN)
+            if [ -s "$MODDIR/kb_expiry.txt" ]; then
+                _kbe=$(head -n 1 "$MODDIR/kb_expiry.txt" 2>/dev/null | tr -d ' \t\r\n')
+            fi
+            ;;
+    esac
+    case "$_kbe" in ''|unknown|UNKNOWN) _kbe="" ;; esac
+
+    if [ -n "$_kbe" ]; then __KE=" (exp: $_kbe)"; else __KE=""; fi
+    case "$_kba" in
+        OK*)       KB_TAG="🔑 OK${__KE}" ;;
+        REVOKED*)  KB_TAG="🔑 REVOKED${__KE}" ;;
+        EXPIRED*)  KB_TAG="🔑 EXPIRED${__KE}" ;;
+        EXPIRING*) KB_TAG="🔑 EXPIRING${__KE}" ;;
+        FAIL*)     KB_TAG="🔑 MISSING${__KE}" ;;
+        *)
+            # لا يوجد ملف تنبيه نشط، لكن التاريخ معروف ⇒ اعرضه بجانب حالة سليمة
+            if [ -n "$_kbe" ]; then KB_TAG="🔑 OK${__KE}"; fi
+            ;;
+    esac
+    if [ -z "$KB_TAG" ]; then
+        if [ -s /data/adb/falcon_keysync/kb_state ]; then
+            KB_ST=$(head -n 1 /data/adb/falcon_keysync/kb_state 2>/dev/null | tr -d ' \t\r\n')
+            case "$KB_ST" in
+                OK*)       KB_TAG="🔑 OK${__KE}" ;;
+                REVOKED*)  KB_TAG="🔑 REVOKED${__KE}" ;;
+            esac
+        fi
     fi
     if [ -z "$KB_TAG" ]; then
         if [ -s /data/adb/tricky_store/keybox.xml ] && grep -q "<AndroidAttestation" /data/adb/tricky_store/keybox.xml 2>/dev/null; then
-            KB_TAG="🔑 KB Attached"
+            KB_TAG="🔑 Attached"
         else
-            KB_TAG="🔑 KB Missing"
+            KB_TAG="🔑 Missing"
         fi
     fi
 

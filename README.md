@@ -68,7 +68,7 @@ releases:
 | Path | What it is |
 | --- | --- |
 | `module.prop` | module metadata, `id=falcon_integrity_fix` |
-| `customize.sh` | installer: stages files, removes conflicting modules, copies the keybox |
+| `customize.sh` | installer: stages files, backs up and wipes `/data/adb/tricky_store`, forces the bundled keybox |
 | `post-fs-data.sh` | early boot, before GMS starts |
 | `service.sh` | main service, starts the keystore engine and refreshes the fingerprint |
 | `action.sh` | the Action button, full refresh on demand |
@@ -79,15 +79,19 @@ releases:
 
 ## Keybox
 
-`keybox.xml` is shipped inside the release ZIP and is copied to
-`/data/adb/tricky_store/keybox.xml` on first install. It is not committed to
-this repository on purpose, so the file stays in the release asset only.
+`keybox.xml` is shipped inside the release ZIP and is not committed to this
+repository on purpose, so the file stays in the release asset only.
 
-The bundled keybox is the same one the fetch button downloads, so a fresh
-install and a fetched keybox are identical.
+On every install/update the module backs up and wipes `/data/adb/tricky_store`,
+then forces the bundled keybox on both the active path and the primary slot.
+A full copy of the old directory is kept in
+`/data/adb/falcon/.slots/backups/`, together with the previous active keybox.
+Boot does not overwrite a valid custom keybox; only an install/update forces
+the bundled one.
 
-To use your own keybox, drop it in `/data/adb/tricky_store/keybox.xml` and
-reboot. The module keeps the active slot in `/data/adb/falcon/.token_cache`.
+To use your own keybox between updates, drop it in
+`/data/adb/tricky_store/keybox.xml` and reboot. The module keeps the active
+slot in `/data/adb/falcon/.token_cache`.
 
 ## Notes
 

@@ -475,7 +475,6 @@
     </div>
     <div class="row" style="margin-top:8px">
         <button id="btnPifApply" data-i18n="btnPifApply"></button>
-        <button id="btnPifCheck" data-i18n="btnPifCheck"></button>
         <button id="btnCanary" data-i18n="btnCanary"></button>
         <button id="btnEngineDiag" data-i18n="btnEngineDiag"></button>
         <button id="btnWvDiag" data-i18n="btnWvDiag"></button>
@@ -931,7 +930,6 @@ var I18N = {
         btnCertify: '✅ اعتماد متجر Play',
         btnSoter: '🔐 إصلاح SOTER',
         btnPifApply: '🎭 تطبيق البصمة',
-        btnPifCheck: '🔎 فحص ملف البصمة',
         btnCanary: '🔁 تحديث بصمة Canary',
         btnEngineDiag: '🩺 فحص محرك التعتيد',
         confirmKbSmart: 'جلب ذكي للكيبوكس (جديد v3.17):\n\n• يفحص الكيبوكس الحالي في قائمة إبطال جوجل (CRL).\n• يجرّب مصادر متعددة حتى يجد كيبوكساً سليماً.\n• نسخة احتياطية تلقائية + إعادة تشغيل خدمات جوجل.\n\n⚠️ يحتاج إنترنت (1-3 دقائق). متابعة؟',
@@ -1183,8 +1181,8 @@ var I18N = {
         btnCertify: '✅ Certify Play Store',
         btnSoter: '🔐 SOTER repair',
         btnPifApply: '🎭 Apply PIF fingerprint',
-        btnPifCheck: '🔎 Check fingerprint file',
         btnCanary: '🔁 Update Canary fingerprint',
+btnCanaryCheck: '🔎 Check Canary fingerprint',
         btnEngineDiag: '🩺 Engine diagnostics',
         confirmKbSmart: 'Smart keybox fetch (new in v3.17):\n\n• Checks the current keybox against the Google revocation list (CRL).\n• Tries multiple sources until a clean keybox is found.\n• Automatic backup + restarts Google services.\n\n⚠️ Needs internet (1-3 min). Continue?',
         confirmKbNet: 'Fetch keybox from the internet:\n\n• Downloads the official keybox and validates it.\n• Installed permanently (never reverted at boot).\n\n⚠️ Needs internet (up to 1 min). Continue?',
@@ -1435,8 +1433,8 @@ var I18N = {
         btnCertify: '✅ Play Store sertifikası',
         btnSoter: '🔐 SOTER onarımı',
         btnPifApply: '🎭 PIF parmak izini uygula',
-        btnPifCheck: '🔎 Parmak izi dosyasını denetle',
         btnCanary: '🔁 Canary parmak izini güncelle',
+btnCanaryCheck: '🔎 Canary parmak izini denetle',
         btnEngineDiag: '🩺 Motor tanılama',
         confirmKbSmart: 'Akıllı keybox getirme (yeni v3.17):\n\n• Mevcut keybox Google iptal listesinde (CRL) denetlenir.\n• Temiz bir keybox bulunana kadar birden çok kaynak denenir.\n• Otomatik yedek + Google servisleri yeniden başlatılır.\n\n⚠️ İnternet gerekir (1-3 dk). Devam?',
         confirmKbNet: 'Keybox internetten indirilsin mi:\n\n• Resmî keybox indirilir ve doğrulanır.\n• Kalıcı olarak kurulur (açılışta geri alınmaz).\n\n⚠️ İnternet gerekir (1 dk kadar). Devam?',
@@ -1687,8 +1685,8 @@ var I18N = {
         btnCertify: '✅ Сертификация Play Store',
         btnSoter: '🔐 Ремонт SOTER',
         btnPifApply: '🎭 Применить отпечаток PIF',
-        btnPifCheck: '🔎 Проверить файл отпечатка',
         btnCanary: '🔁 Обновить отпечаток Canary',
+btnCanaryCheck: '🔎 Проверить отпечаток Canary',
         btnEngineDiag: '🩺 Диагностика движка',
         confirmKbSmart: 'Умная загрузка keybox (новая в v3.17):\n\n• Текущий keybox проверяется по списку отзыва Google (CRL).\n• Перебираются источники, пока не найдётся чистый keybox.\n• Автоматическая резервная копия + перезапуск сервисов Google.\n\n⚠️ Нужен интернет (1-3 мин). Продолжить?',
         confirmKbNet: 'Скачать keybox из интернета:\n\n• Скачивается официальный keybox и проверяется.\n• Устанавливается навсегда (не откатывается при загрузке).\n\n⚠️ Нужен интернет (до 1 мин). Продолжить?',
@@ -2485,7 +2483,7 @@ function wrap(cmd, secs) {
 }
 
 function setBusy(on) {
-    var ids = ['btnRefresh', 'btnEssOnly', 'btnAdd', 'btnDump', 'btnDiag', 'btnCopyLog', 'btnSaveCfg', 'btnBaseline', 'btnAutoLog', 'btnKeyboxImport', 'btnCrlCheck', 'btnGwipe', 'btnKbSmart', 'btnKbNet', 'btnRkpDiag', 'btnRkpManual', 'btnRkpFull', 'btnGmsReset', 'btnRkpForce', 'btnCertify', 'btnSoter', 'btnPifApply', 'btnPifCheck', 'btnCanary', 'btnEngineDiag', 'btnIntegrityDiag', 'btnIntegrityFix'];
+    var ids = ['btnRefresh', 'btnEssOnly', 'btnAdd', 'btnDump', 'btnDiag', 'btnCopyLog', 'btnSaveCfg', 'btnBaseline', 'btnAutoLog', 'btnKeyboxImport', 'btnCrlCheck', 'btnGwipe', 'btnKbSmart', 'btnKbNet', 'btnRkpDiag', 'btnRkpManual', 'btnRkpFull', 'btnGmsReset', 'btnRkpForce', 'btnCertify', 'btnSoter', 'btnPifApply', 'btnCanary', 'btnEngineDiag', 'btnIntegrityDiag', 'btnIntegrityFix'];
     for (var i = 0; i < ids.length; i++) { if ($(ids[i])) $(ids[i]).disabled = !!on; }
 }
 
@@ -2676,7 +2674,7 @@ function readCore(cb) {
     var cmd = [
         'export PATH=/system/bin:/system/xbin:/vendor/bin:$PATH',
         'echo "###T"; cat ' + TARGET_FILE + ' 2>/dev/null',
-        'echo "###K"; if [ -s ' + KEYBOX_FILE + ' ]; then echo "SIZE=$(wc -c < ' + KEYBOX_FILE + ' 2>/dev/null)"; echo "CERTS=$(grep -c "BEGIN CERT" ' + KEYBOX_FILE + ' 2>/dev/null)"; if cmp -s ' + KEYBOX_FILE + ' ' + MAIN_KEYBOX + ' 2>/dev/null; then echo "SRC=BUNDLED"; else echo "SRC=CUSTOM"; fi; else echo "SIZE=0"; echo "CERTS=0"; echo "SRC=NONE"; fi',
+        'echo "###K"; if [ -s ' + KEYBOX_FILE + ' ]; then echo "SIZE=$(wc -c < ' + KEYBOX_FILE + ' 2>/dev/null)"; echo "CERTS=$(grep -c "BEGIN CERT" ' + KEYBOX_FILE + ' 2>/dev/null)"; SRC=""; [ -f /data/adb/modules/falcon_integrity_fix/falcon_keybox.sh ] && SRC=$(sh /data/adb/modules/falcon_integrity_fix/falcon_keybox.sh source 2>/dev/null); case "$SRC" in BUNDLED|CUSTOM) ;; *) SRC=CUSTOM; M=""; [ -s /data/adb/falcon/.token_source ] && M=$(cat /data/adb/falcon/.token_source 2>/dev/null); case "$M" in bundled*) SRC=BUNDLED ;; custom*) SRC=CUSTOM ;; *) if cmp -s ' + KEYBOX_FILE + ' ' + MAIN_KEYBOX + ' 2>/dev/null || cmp -s ' + KEYBOX_FILE + ' /data/adb/modules/falcon_integrity_fix/zygisk/keybox.xml 2>/dev/null || cmp -s ' + KEYBOX_FILE + ' /data/adb/modules_update/falcon_integrity_fix/keybox.xml 2>/dev/null || cmp -s ' + KEYBOX_FILE + ' /data/adb/modules_update/falcon_integrity_fix/zygisk/keybox.xml 2>/dev/null || cmp -s ' + KEYBOX_FILE + ' /data/adb/falcon/.token_bundle 2>/dev/null; then SRC=BUNDLED; fi ;; esac ;; esac; echo "SRC=$SRC"; else echo "SIZE=0"; echo "CERTS=0"; echo "SRC=NONE"; fi',
         'echo "###E"; if pidof TrickyStoreOSS >/dev/null 2>&1; then echo RUNNING; else echo STOPPED; fi',
         'echo "###P"; cat /data/adb/tricky_store/security_patch.txt 2>/dev/null',
         'echo "###A"; if [ -f /data/adb/falcon/auto_hide_new ] && [ "$(cat /data/adb/falcon/auto_hide_new 2>/dev/null)" = "off" ]; then echo off; else echo on; fi',
@@ -3122,8 +3120,9 @@ function importKeybox() {
         + 'if [ -n "$F" ]; then '
         + '  mkdir -p /data/adb/tricky_store /data/adb/falcon; '
         + '  cp -f "$F" /data/adb/tricky_store/keybox.xml; cp -f "$F" /data/adb/falcon/.token_cache; '
+        + '  printf "custom\\n" > /data/adb/falcon/.token_source; chmod 600 /data/adb/falcon/.token_source 2>/dev/null; '
         + '  chmod 644 /data/adb/tricky_store/keybox.xml 2>/dev/null; chmod 600 /data/adb/falcon/.token_cache 2>/dev/null; '
-        + '  chown root:root /data/adb/tricky_store/keybox.xml /data/adb/falcon/.token_cache 2>/dev/null; sync; '
+        + '  chown root:root /data/adb/tricky_store/keybox.xml /data/adb/falcon/.token_cache /data/adb/falcon/.token_source 2>/dev/null; sync; '
         + '  rm -f /sdcard/Download/keybox.xml /sdcard/Download/keybox.xml.bak 2>/dev/null; '
         + '  echo "KEYBOX_SRC=$F"; echo KEYBOX_DONE; '
         + 'else echo KEYBOX_NONE; fi';
@@ -3583,7 +3582,7 @@ function engineDiag() {
     cmds.push('echo "### [9] ' + t('dgE9') + '"');
     cmds.push('for f in /data/adb/tricky_store/keybox.xml /data/adb/falcon/.token_cache /data/adb/modules/falcon_integrity_fix/keybox.xml; do if [ -s "$f" ]; then N=$(wc -c < "$f"); C=$(grep -c "BEGIN CERT" "$f" 2>/dev/null); echo "   $f -> $N bytes | ' + t('dgCerts') + '=$C"; else echo "   $f -> ' + t('dgMissing') + '"; fi; done');
     cmds.push('cmp -s /data/adb/tricky_store/keybox.xml /data/adb/falcon/.token_cache 2>/dev/null && echo "   ' + t('dgActEqSaved') + ' ✔" || echo "   ⚠️ ' + t('dgActNeSaved') + '"');
-    cmds.push('cmp -s /data/adb/tricky_store/keybox.xml /data/adb/modules/falcon_integrity_fix/keybox.xml 2>/dev/null && echo "   ' + t('dgActEqStock') + '" || echo "   ' + t('dgActNeStock') + '"');
+    cmds.push('SRC=""; [ -f /data/adb/modules/falcon_integrity_fix/falcon_keybox.sh ] && SRC=$(sh /data/adb/modules/falcon_integrity_fix/falcon_keybox.sh source 2>/dev/null); if [ "$SRC" = "CUSTOM" ]; then echo "   ' + t('dgActNeStock') + '"; elif [ "$SRC" = "BUNDLED" ]; then echo "   ' + t('dgActEqStock') + '"; else M=""; [ -s /data/adb/falcon/.token_source ] && M=$(cat /data/adb/falcon/.token_source 2>/dev/null); if [ "$M" = "custom" ]; then echo "   ' + t('dgActNeStock') + '"; elif [ "$M" = "bundled" ]; then echo "   ' + t('dgActEqStock') + '"; elif cmp -s /data/adb/tricky_store/keybox.xml /data/adb/modules/falcon_integrity_fix/keybox.xml 2>/dev/null || cmp -s /data/adb/tricky_store/keybox.xml /data/adb/modules/falcon_integrity_fix/zygisk/keybox.xml 2>/dev/null || cmp -s /data/adb/tricky_store/keybox.xml /data/adb/falcon/.token_bundle 2>/dev/null; then echo "   ' + t('dgActEqStock') + '"; else echo "   ' + t('dgActNeStock') + '"; fi; fi');
     cmds.push('echo "### [10] ' + t('dgE10') + '"');
     cmds.push('ls -l /vendor/bin/KmInstallKeybox /system/bin/KmInstallKeybox 2>&1 | head -3');
     cmds.push('if [ -f /data/adb/falcon/rkp_fix_done ]; then echo "   ' + t('dgAutoFlag') + ': $(cat /data/adb/falcon/rkp_fix_done)"; else echo "   ' + t('dgNoAuto') + '"; fi');
@@ -4006,7 +4005,6 @@ $('btnRkpForce').onclick = rkpForce;
 $('btnCertify').onclick = certifyPlay;
 $('btnSoter').onclick = soterRepair;
 $('btnPifApply').onclick = pifApply;
-$('btnPifCheck').onclick = pifCheck;
 $('btnCanary').onclick = canaryUpdate;
 $('btnEngineDiag').onclick = engineDiag;
 $('btnWvDiag').onclick = wvDiag;

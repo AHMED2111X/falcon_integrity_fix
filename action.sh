@@ -192,6 +192,25 @@ if [ -n "$KB_CHOSEN" ]; then
         chmod 600 "$USER_KEYBOX" 2>/dev/null
         chown root:root "$USER_KEYBOX" 2>/dev/null
     fi
+    # وسم المصدر: نستعمل منطق falcon_keybox.sh الموحّد (وسم صريح + مقارنة بكل
+    # مسارات المرفق واللقطة والإصدار القديم)، ثم نرجع إلى المقارنة المباشرة.
+    KB_IS_BUNDLE=0
+    if [ -n "$BUNDLED_KEYBOX" ] && [ "$KB_CHOSEN" = "$BUNDLED_KEYBOX" ]; then
+        KB_IS_BUNDLE=1
+    elif [ -f "$MODDIR/falcon_keybox.sh" ]; then
+        [ "$(sh "$MODDIR/falcon_keybox.sh" source 2>/dev/null)" = "BUNDLED" ] && KB_IS_BUNDLE=1
+    fi
+    if [ "$KB_IS_BUNDLE" -eq 1 ]; then
+        printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+    elif [ "$(tr -d ' \t\r\n' < /data/adb/falcon/.token_source 2>/dev/null)" = "custom" ]; then
+        : # كيبوكس مخصص مثبّت مسبقاً — لا نغيّر وسمه
+    elif [ -n "$BUNDLED_KEYBOX" ] && cmp -s "$KB_CHOSEN" "$BUNDLED_KEYBOX" 2>/dev/null; then
+        printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+    else
+        printf 'custom\n' > /data/adb/falcon/.token_source 2>/dev/null
+    fi
+    chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+    chown root:root /data/adb/falcon/.token_source 2>/dev/null
     step_success "تم تثبيت Keybox بشكل دائم (يبقى بعد إعادة التشغيل)"
 elif ! kb_valid "$TS_KEYBOX"; then
     step_info "تنبيه: لم يتم العثور على أي ملف keybox.xml صالح."

@@ -34,18 +34,17 @@ if command -v resetprop >/dev/null 2>&1; then
     done
 fi
 
-# حذف ملفات السجل الخاصة بالموديول
-rm -f "/data/adb/modules/falcon_integrity_fix/falcon_integrity_fix.log" 2>/dev/null
-rm -f "/data/adb/modules/falcon_integrity_fix/integrity_fix.log" 2>/dev/null
-rm -f "/data/adb/modules/playintegrityfix/falcon_integrity_fix.log" 2>/dev/null
-rm -f "/data/adb/modules/playintegrityfix/integrity_fix.log" 2>/dev/null
+# (v3.29) لا نحذف ملفات السجل يدوياً — تزول مع مجلد الوحدة عند إزالتها.
+# (كانت هنا أوامر rm -f على مسارات /data/adb/modules/* وهي تُفعّل تنبيه
+#  "تعطيل وحدات أخرى" في KernelSU Next.)
 
 # تنظيف ملفات البصمة التي نشرناها في مسار المحرك (فقط إن كنا نحن من أنشأها)
+# ✅ مشروط بعدم وجود module.prop ⇒ المجلد مرآة أنشأناها، وليس وحدة مستقلة.
 PIF_MIRROR_DIR="/data/adb/modules/playintegrityfix"
 if [ -d "$PIF_MIRROR_DIR" ] && [ ! -f "$PIF_MIRROR_DIR/module.prop" ]; then
-    rm -f "$PIF_MIRROR_DIR/custom.pif.json" "$PIF_MIRROR_DIR/pif.json" \
-          "$PIF_MIRROR_DIR/custom.pif.prop" "$PIF_MIRROR_DIR/pif.prop" \
-          "$PIF_MIRROR_DIR/classes.dex" 2>/dev/null
+    for _pf in custom.pif.json pif.json custom.pif.prop pif.prop classes.dex; do
+        [ -e "$PIF_MIRROR_DIR/$_pf" ] && rm -f "$PIF_MIRROR_DIR/$_pf" 2>/dev/null
+    done
     rmdir "$PIF_MIRROR_DIR" 2>/dev/null
 fi
 rm -f /data/adb/pif.json /data/adb/pif.prop 2>/dev/null
@@ -58,49 +57,14 @@ for P in TrickyStoreOSS TrickyStore; do
 done
 pkill -f "io.github.beakthoven.TrickyStoreOSS" 2>/dev/null || true
 
-# (v3.21) النمط المتعارض مجزَّأ عبر متغيرين — المطابقة النهائية كما هي بالضبط
-#         (يمنع تفعيل فحص مخاطر KernelSU Next عند التثبيت)
-IB_A='integrity'
-IB_B='box'
+# --- (v3.29) لا نُعدّل علامات أي وحدة أخرى عند الإزالة (قراءة فقط / لا لمس) ---
+# النسخ السابقة كانت تزيل علامات remove/disable من وحدات التعتيد الأخرى،
+# وهذا يُصنَّف "تعطيل وحدات أخرى" في فحص أمان KernelSU Next.
+# الآن: لا نمس أي مديول غير مديولاتنا.
 
-# --- إلغاء أي حذف معلّق للوحدات المتعارضة (احترام ممتلكات المستخدم) ---
-# إن أزلت موديولنا قبل إعادة التشغيل، نُلغي علامة الحذف التي وضعناها على
-# وحدات التعتيد القديمة حتى لا تُمسح وحدات المستخدم بلا سبب.
-# نستثني صراحةً وحدتينا (الأم والمرتبطة falcon_tricky) — حذف المرتبطة مقصود بالأسفل.
-for RBASE in /data/adb/modules /data/adb/modules_update; do
-    [ -d "$RBASE" ] || continue
-    for RDIR in "$RBASE"/*; do
-        [ -d "$RDIR" ] || continue
-        RNAME="${RDIR##*/}"
-        case "$RNAME" in
-            falcon_integrity_fix|playintegrityfix|falcon_tricky) continue ;;
-        esac
-        RULOW=$(printf '%s' "$RNAME" | tr 'A-Z' 'a-z' 2>/dev/null)
-        case "$RULOW" in
-            *tricky*|*safetynet*|*playintegrity*|*play_integrity*|*playcurl*|*pif*|*integrityfix*|*ts_addon*|*tsupport*|\
-            *specter*|*yurikey*|*teesim*|*tee_simulator*|*"$IB_A"box*|*"$IB_A"_"$IB_B"*|*"$IB_A"-"$IB_B"*|\
-            *ta_utl*|*ta_enhanced*|*ta-enhanced*|*magiskhideprops*|*alwaysstrong*) ;;
-            *) continue ;;
-        esac
-        rm -f "$RDIR/remove" "$RDIR/disable" 2>/dev/null
-    done
-done
-
-# --- (v3.15) الرابط المزدوج: حذف الإضافة الأم يحذف ملحق FALCON TRICKY فوراً ---
-# سابقاً كنا نضع علامة remove فقط (تنتظر إعادة التشغيل)؛ الآن نحذف المجلد
-# حذفاً حقيقياً فورياً من مسارَي الوحدات، مع الإبقاء على العلامة كخطة بديلة
-# في حال فشل الحذف (ملف مشغول/صلاحيات).
-#
-# ⚠️ استثناء مهم: لو كان هذا السكربت مُستدعىً من سكربت حذف الملحق نفسه
-#    (FALCON_FROM_COMPANION=1) نتخطى حذف مجلد الملحق هنا — لأن الملحق هو
-#    الذي يتولّاه بنفسه، ولا يجوز حذف سكربت وهو قيد التنفيذ.
-if [ "${FALCON_FROM_COMPANION:-0}" != "1" ]; then
-    for FBASE in /data/adb/modules /data/adb/modules_update; do
-        [ -d "$FBASE/falcon_tricky" ] || continue
-        touch "$FBASE/falcon_tricky/remove" 2>/dev/null
-        rm -rf "$FBASE/falcon_tricky" 2>/dev/null
-    done
-fi
+# --- (v3.29) لا نضع أي علامة remove على أي مجلد وحدة (لا ours ولا غيرنا) ---
+# هذا هو الكود الذي كان يُفعّل تنبيه قاعدة الأمان في KernelSU Next.
+# إزالة FALCON TRICKY (إن وُجدت) تتم من مدير الروت مباشرة.
 
 # بيانات الملحق الخاصة (أرشيف أيقونات التطبيقات المستخرجة من الجهاز)
 rm -rf /data/adb/falcon_icons 2>/dev/null

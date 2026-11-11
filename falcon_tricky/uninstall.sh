@@ -25,12 +25,9 @@ for B in /data/adb/modules /data/adb/modules_update; do
     fi
 done
 
-# 2) حذف فوري حقيقي لمجلد الإضافة الأم من المسارين
-for B in /data/adb/modules /data/adb/modules_update; do
-    [ -d "$B/$MAIN_ID" ] || continue
-    touch "$B/$MAIN_ID/remove" 2>/dev/null
-    rm -rf "$B/$MAIN_ID" 2>/dev/null
-done
+# 2) (v3.29) لا نضع علامة remove على مجلد الإضافة الأم — هذا الكود كان
+#    يُفعّل تنبيه قاعدة الأمان في KernelSU Next ("تعطيل وحدات أخرى").
+#    إزالة الأم تتم من مدير الروت مباشرة.
 
 # 3) بيانات الملحق (أرشيف الأيقونات المستخرجة من تطبيقات الجهاز)
 rm -rf /data/adb/falcon_icons 2>/dev/null

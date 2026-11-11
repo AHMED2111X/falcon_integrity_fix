@@ -3,11 +3,10 @@
 # المطور: ABUFARID | تليجرام: @FALCON_KERNEL
 # ==============================================================================
 
-# إزالة وحذف الإضافات المباشرة التي تسبب تعارضاً مؤكداً
+# (v3.29) كشف فقط — لا نضع علامة حذف على وحدات أخرى (تفادي تنبيه قاعدة الأمان)
 if [ -d /data/adb/modules/safetynet-fix ]; then
-    touch /data/adb/modules/safetynet-fix/remove
     command -v ui_print >/dev/null 2>&1 && \
-        ui_print "! سيتم إزالة موديول Universal SafetyNet Fix (USNF) عند إعادة التشغيل القادمة"
+        ui_print "- ⚠️ وُجد Universal SafetyNet Fix (USNF) — لم يُمسّ. عطّله يدوياً لتفادي التعارض"
 fi
 
 # استبدال وإخفاء ملفات ومجلدات تطبيقات الحقن بالرومات المخصصة لإلغاء تفعيلها

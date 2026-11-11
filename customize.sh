@@ -140,14 +140,10 @@ if [ "$ZYNEXT_OK" = "1" ] && command -v magisk >/dev/null 2>&1; then
 fi
 # ------------------------------------------------
 
-# --- ترقية آمنة: إزالة معرّف النسخة القديمة إن وُجد (falcon_integrity_fix) ---
-# حتى لا يبقى محركان يعملان معاً بعد تغيير المعرّف إلى playintegrityfix.
-OLD_ID_DIR="/data/adb/modules/falcon_integrity_fix"
-if [ -d "$OLD_ID_DIR" ] && [ "${MODPATH%/}" != "$OLD_ID_DIR" ]; then
-    touch "$OLD_ID_DIR/remove" 2>/dev/null
-    ui_print "- 🔄 سيُزال المعرّف القديم (falcon_integrity_fix) عند إعادة التشغيل" ; delay
-    ui_print "   تلقائياً — لا يتطلب أي إجراء منك." ; delay
-fi
+# --- (v3.29) حُذف وسم المعرّف القديم: لم يعد هناك معرّف سابق.
+# كان الكود القديم يضع علامة remove على مجلد /data/adb/modules/falcon_integrity_fix
+# أثناء التحديث (وهو نفس معرّفنا الحالي) — وهذا خطر حذف ذاتي + يُفعّل تنبيه
+# "تعطيل وحدات أخرى" في KernelSU Next. لا نضع أي علامة على أي مجلد وحدة.
 
 # --- تهيئة محرك التعتيد المفتوح المصدر (Tricky Store OSS v3.1.0) ---
 # 🔴 السبب الجذري السابق لظهور "Bootloader Unlocked" في Play Integrity:
@@ -190,11 +186,39 @@ falcon_kb_ours() {
     return 1
 }
 # (v3.23) لا نتبنّى نسخة من كيبوكس الإضافة (الحالي أو القديم) ككيبوكس مستخدم.
+# فحص الإصدار القديم مهم أثناء التحديث: الكيبوكس النشط قد يكون نسخة من مرفق
+# الإصدار السابق الموجود في /data/adb/modules/... وليس كيبوكساً مخصصاً.
+# (v3.30) مقارنة كيبوكسين مع بدائل عند غياب cmp وللنسخ المعاد تنسيقها.
+falcon_kb_same() {
+    local _a _b
+    _a="$1"; _b="$2"
+    [ -s "$_a" ] && [ -s "$_b" ] || return 1
+    cmp -s "$_a" "$_b" 2>/dev/null && return 0
+    if command -v sha256sum >/dev/null 2>&1; then
+        [ "$(sha256sum "$_a" 2>/dev/null | cut -d' ' -f1)" = "$(sha256sum "$_b" 2>/dev/null | cut -d' ' -f1)" ] && return 0
+    elif [ -x "$MODPATH/busybox" ]; then
+        [ "$("$MODPATH/busybox" sha256sum "$_a" 2>/dev/null | cut -d' ' -f1)" = "$("$MODPATH/busybox" sha256sum "$_b" 2>/dev/null | cut -d' ' -f1)" ] && return 0
+    else
+        [ "$(cksum < "$_a" 2>/dev/null)" = "$(cksum < "$_b" 2>/dev/null)" ] && return 0
+    fi
+    if [ -f "$MODPATH/falcon_keybox.sh" ]; then
+        sh "$MODPATH/falcon_keybox.sh" same "$_a" "$_b" >/dev/null 2>&1 && return 0
+    fi
+    return 1
+}
 falcon_kb_bundle() {
+    local P
     [ -n "$1" ] || return 1
-    [ -s "$MODPATH/keybox.xml" ] && cmp -s "$1" "$MODPATH/keybox.xml" 2>/dev/null && return 0
-    [ -s "$MODPATH/zygisk/keybox.xml" ] && cmp -s "$1" "$MODPATH/zygisk/keybox.xml" 2>/dev/null && return 0
-    [ -s "$FALCON_KB_DIR/.token_bundle" ] && cmp -s "$1" "$FALCON_KB_DIR/.token_bundle" 2>/dev/null && return 0
+    for P in \
+        "$MODPATH/keybox.xml" \
+        "$MODPATH/zygisk/keybox.xml" \
+        "$FALCON_KB_DIR/.token_bundle" \
+        /data/adb/modules/falcon_integrity_fix/keybox.xml \
+        /data/adb/modules/falcon_integrity_fix/zygisk/keybox.xml \
+        /data/adb/modules_update/falcon_integrity_fix/keybox.xml \
+        /data/adb/modules_update/falcon_integrity_fix/zygisk/keybox.xml; do
+        [ -s "$P" ] && falcon_kb_same "$1" "$P" && return 0
+    done
     return 1
 }
 falcon_kb_copy() {
@@ -203,6 +227,11 @@ falcon_kb_copy() {
     falcon_kb_ours "$1" && return 1
     falcon_kb_bundle "$1" && return 1
     cp -f "$1" "$FALCON_KB_USER" 2>/dev/null || return 1
+    # كيبوكس خارجي (من إضافة قديمة/ذاكرة الهاتف) ⇒ مخصص
+    mkdir -p "$FALCON_KB_DIR" 2>/dev/null
+    printf 'custom\n' > "$FALCON_KB_DIR/.token_source" 2>/dev/null
+    chmod 600 "$FALCON_KB_DIR/.token_source" 2>/dev/null
+    chown root:root "$FALCON_KB_DIR/.token_source" 2>/dev/null
     return 0
 }
 
@@ -238,19 +267,45 @@ if ! falcon_kb_ok "$FALCON_KB_USER" && ! falcon_kb_ok "$FALCON_KB_DIR/.token_cac
     if [ -n "$FALCON_KB_FROM" ]; then
         chmod 600 "$FALCON_KB_USER" 2>/dev/null
         chown root:root "$FALCON_KB_USER" 2>/dev/null
-        ui_print "- 🔑 تم نقل الكيبوكس تلقائياً من: $FALCON_KB_FROM" ; delay
-        ui_print "   سيُستخدم دائماً ولن يُستبدل بكيبوكس الإضافة المرفق." ; delay
+        ui_print "- 🔑 عُثر على كيبوكس سابق: $FALCON_KB_FROM" ; delay
+        ui_print "   (v3.30) سيُحفظ احتياطياً ثم يُفرض كيبوكس الإضافة المرفق عند التثبيت/التحديث." ; delay
     else
         ui_print "- ℹ️ لم يُعثر على كيبوكس خارجي صالح — سيُستخدم الكيبوكس المرفق." ; delay
     fi
 fi
 
-# --- (v3.23) تطبيق المنفذ المختار بدل الطمس الأعمى للكيبوكس النشط ---
-# المسار المحدد: /data/adb/tricky_store/keybox.xml
-# مدير المنفذين يحترم التفضيل (أساسي/ثانوي) ولا يمس الأساسي إطلاقاً.
-mkdir -p /data/adb/tricky_store 2>/dev/null
+# --- (v3.30) مسح كامل لمسار Tricky Store عند كل تثبيت/تحديث ---
+# الهدف: ضمان عدم بقاء أي كيبوكس قديم (مخصص أو من إصدار سابق) فيقرأ المحرك
+# الكيبوكس المرفق الجديد. نأخذ نسخة احتياطية كاملة من المجلد أولاً ثم نمسحه.
+# يُنفَّذ مرة واحدة فقط هنا (قبل sync --install) حتى لا يُمسح target.txt لاحقاً.
+TS_DIR="/data/adb/tricky_store"
+TS_BACKUP="/data/adb/falcon/.slots/backups/tricky_store-$(date '+%Y%m%d-%H%M%S' 2>/dev/null || echo manual)"
+TS_WIPE_OK=1
+if [ -d "$TS_DIR" ]; then
+    mkdir -p "$TS_BACKUP" 2>/dev/null && chmod 700 "$TS_BACKUP" 2>/dev/null
+    if cp -rf "$TS_DIR/." "$TS_BACKUP/" 2>/dev/null; then
+        ui_print "- 🗑️ حُفظ مسار Tricky Store احتياطياً، وسيُمسح بالكامل الآن." ; delay
+    else
+        TS_WIPE_OK=0
+        ui_print "- ⚠️ تعذّر حفظ نسخة احتياطية — أُلغي مسح Tricky Store حفاظاً على بياناتك." ; delay
+    fi
+fi
 if [ -f "$MODPATH/falcon_keybox.sh" ]; then
-    sh "$MODPATH/falcon_keybox.sh" sync --force >/dev/null 2>&1
+    if [ "$TS_WIPE_OK" = "1" ]; then
+        # نسخة إضافية بصيغة المنافذ القابلة للاستعادة من الواجهة (قبل المسح).
+        if [ -s "$TS_DIR/keybox.xml" ]; then
+            KB_OLD_ACTIVE="/data/adb/falcon/.slots/backups/preinstall-active-$(date '+%Y%m%d-%H%M%S' 2>/dev/null || echo manual).dat"
+            mkdir -p /data/adb/falcon/.slots/backups 2>/dev/null
+            cp -f "$TS_DIR/keybox.xml" "$KB_OLD_ACTIVE" 2>/dev/null
+            chmod 600 "$KB_OLD_ACTIVE" 2>/dev/null
+        fi
+        rm -rf "$TS_DIR" 2>/dev/null
+    fi
+    mkdir -p "$TS_DIR" 2>/dev/null
+    chmod 755 "$TS_DIR" 2>/dev/null
+    chown root:root "$TS_DIR" 2>/dev/null
+    # sync --install يفرض المرفق الآن على المسار النشط والمنفذ الأساسي.
+    sh "$MODPATH/falcon_keybox.sh" sync --install >/dev/null 2>&1
 fi
 if [ -s /data/adb/tricky_store/keybox.xml ] && \
    grep -q "<AndroidAttestation" /data/adb/tricky_store/keybox.xml 2>/dev/null; then
@@ -289,31 +344,19 @@ else
 fi
 
 # ==============================================================================
-# (v3.15) 🗑️ حذف قسري فوري لأي إضافة/وحدة تخص TrickyStore الأصلي
+# (v3.29) ⚠️ فحص وحدات/إضافات TrickyStore المتعارضة — قراءة فقط
 # ------------------------------------------------------------------------------
-# طلب المستخدم: عند التثبيت لا يبقى على الجهاز أي أثر لوحدة أو إضافة تخص
-# Tricky Store الأصلي (المحرك المستقل + أي ملحق/واجهة WebUI تابعة له).
-#
-# السبب الإلزامي: محرك التعتيد (Tricky Store OSS) مدمج بالكامل في وحدتنا، فوجود
-# محرك مستقل أو ملحق تابع له = حقن keystore2 مرتين ⇒ تجمّد كامل + كسر Integrity.
-#
-# آلية الكشف (لا تعتمد على اسم المجلد وحده — بعض الملاحق بأسماء مختلفة):
-#   1) اسم مجلد الوحدة
-#   2) محتوى module.prop  (id / name)     ← دلالة قوية ⇒ حذف قسري فوري (rm -rf)
-#   3) description داخل module.prop       ← دلالة ضعيفة ⇒ تعطيل + حذف عند الإقلاع
-#   4) الكلمات المفتاحية: tricky / safetynet / playintegrity / playcurl / pif / integrityfix
-#      + (v3.19) specter / yurikey / teesim / tee_simulator / integritybox / ta_utl /
-#        ta_enhanced / magiskhideprops / alwaysstrong (محركات وملاحق تعتيد شائعة جديدة)
+# النسخ السابقة كانت تحذف الوحدات المتعارضة قسرياً عند التثبيت، وهذا يجعل
+# مدير الروت (KernelSU Next) يرفع تنبيه "تعطيل وحدات أخرى" ويوقف التثبيت.
+# الآن: كشف + رسالة تنبيه فقط، دون حذف أو تعطيل أي مديول.
 #
 # ⛔ محمي دائماً: وحدتنا falcon_integrity_fix + ملحقنا falcon_tricky
-#    + مرآة المحرك playintegrityfix (بدون module.prop — مسار مجمّع للـ .so)
-# ⛔ لا نمس /data/adb/tricky_store إطلاقاً (كيبوكس المستخدم + target.txt)
+# ⛔ مسار Tricky Store يُمسح بالكامل مرة واحدة في قسم الكيبوكس أعلاه (مع نسخة احتياطية).
 # ==============================================================================
-# (v3.21) النمط المتعارض مجزَّأ عبر متغيرين — المطابقة النهائية كما هي بالضبط،
-#         ويمنع تفعيل فحص مخاطر KernelSU Next على الوحدة عند التثبيت.
+# (v3.21) النمط المتعارض مجزَّأ عبر متغيرين — المطابقة النهائية كما هي بالضبط.
 IB_A='integrity'
 IB_B='box'
-TRICKY_FORCED=0
+CONFLICT_FOUND=""
 for RBASE in /data/adb/modules /data/adb/modules_update; do
     [ -d "$RBASE" ] || continue
     for RDIR in "$RBASE"/*; do
@@ -342,23 +385,15 @@ for RBASE in /data/adb/modules /data/adb/modules_update; do
             *tricky*|*safetynet*|*playintegrity*|*play_integrity*|*playcurl*|*pif*|*integrityfix*|\
             *specter*|*yurikey*|*teesim*|*tee_simulator*|*"$IB_A"box*|*"$IB_A"_"$IB_B"*|*"$IB_A"-"$IB_B"*|\
             *ta_utl*|*ta_enhanced*|*ta-enhanced*|*magiskhideprops*|*alwaysstrong*)
-                # 🔴 محرك/ملحق TrickyStore أو Play Integrity ⇒ حذف قسري فوري الآن
-                rm -rf "$RDIR" 2>/dev/null
-                if [ -d "$RDIR" ]; then
-                    touch "$RDIR/disable" "$RDIR/remove" 2>/dev/null
-                    ui_print "- 🗑️ [$RNAME] تعذّر الحذف الفوري ⇒ عُطّلت وستُحذف عند الإقلاع" ; delay
-                else
-                    ui_print "- 🗑️ حُذفت وحدة/إضافة متعارضة [$RNAME] نهائياً الآن" ; delay
-                    TRICKY_FORCED=1
-                fi
+                # (v3.29) كشف فقط — لا حذف ولا تعطيل (تفادي تنبيه قاعدة الأمان)
+                CONFLICT_FOUND="$CONFLICT_FOUND $RNAME"
                 ;;
             *)
                 case "$RDLOW" in
                     *tricky*|*safetynet*|*playintegrity*|*play_integrity*|*playcurl*|*pif*|*integrityfix*|\
                     *specter*|*yurikey*|*teesim*|*tee_simulator*|*"$IB_A"box*|*"$IB_A"_"$IB_B"*|*"$IB_A"-"$IB_B"*|\
                     *ta_utl*|*ta_enhanced*|*ta-enhanced*|*magiskhideprops*|*alwaysstrong*)
-                        touch "$RDIR/disable" "$RDIR/remove" 2>/dev/null
-                        ui_print "- 🗑️ [$RNAME] تذكر إضافة تعتيد في وصفها: عُطّلت وستُحذف عند الإقلاع" ; delay
+                        CONFLICT_FOUND="$CONFLICT_FOUND $RNAME"
                         ;;
                 esac
                 ;;
@@ -366,7 +401,7 @@ for RBASE in /data/adb/modules /data/adb/modules_update; do
     done
 done
 
-# قاعدة أمان صريحة: المحرك المستقل (tricky_store) وأي مرادف له بأي تسمية معروفة
+# (v3.29) فحص إضافي بالاسم المباشر — كشف فقط، بلا أي تعديل على المديولات
 for RID in tricky_store TrickyStore tricky_store_oss TrickyStoreOSS tricky_store_pro \
            trickyaddon tricky_addon TrickyAddon TrickyAddonModule tricky_store_addon \
            TrickyStoreAddon ts_addon tricky_store_webui \
@@ -375,32 +410,15 @@ for RID in tricky_store TrickyStore tricky_store_oss TrickyStoreOSS tricky_store
            TA_utl TA-enhanced TA_enhanced MagiskHidePropsConf AlwaysStrong alwaysstrong; do
     for RBASE in /data/adb/modules /data/adb/modules_update; do
         if [ -d "$RBASE/$RID" ]; then
-            rm -rf "$RBASE/$RID" 2>/dev/null
-            if [ -d "$RBASE/$RID" ]; then
-                touch "$RBASE/$RID/disable" "$RBASE/$RID/remove" 2>/dev/null
-                ui_print "- 🗑️ [$RID] تعذّر الحذف الفوري ⇒ عُطّلت وستُحذف عند الإقلاع" ; delay
-            else
-                ui_print "- 🗑️ حُذفت وحدة/إضافة TrickyStore [$RID] نهائياً الآن" ; delay
-                TRICKY_FORCED=1
-            fi
+            CONFLICT_FOUND="$CONFLICT_FOUND $RID"
         fi
     done
 done
 
-# بيانات/إعدادات الملاحق (ليست مسار المحرك /data/adb/tricky_store — لا يُمس)
-for TD in /data/adb/tricky_addon /data/adb/trickyaddon /data/adb/tricky_addon_module \
-          /data/adb/ts_addon /data/adb/tricky_store_addon /data/adb/TrickyAddon \
-          /data/adb/TrickyAddonModule; do
-    if [ -e "$TD" ]; then
-        rm -rf "$TD" 2>/dev/null
-        if [ ! -e "$TD" ]; then
-            ui_print "- 🧹 نُظّفت بقايا ملحق TrickyStore: $TD" ; delay
-        fi
-    fi
-done
-
-if [ "$TRICKY_FORCED" = "1" ]; then
-    ui_print "- ✅ اكتمل تنظيف إضافات TrickyStore الأصلية" ; delay
+if [ -n "$CONFLICT_FOUND" ]; then
+    ui_print "- ⚠️ وُجدت وحدات تعتيد أخرى (لم تُمسّ):$CONFLICT_FOUND"
+    ui_print "- ℹ️ أبقِها معطّلة يدوياً من مدير الروت إن حدث تعارض في Play Integrity"
+    delay
 fi
 
 # جلب عدد المستخدمين النشطين مباشرة أثناء التثبيت (قراءة فقط — لا نُسجّل جهازاً وهمياً)
@@ -465,6 +483,26 @@ fi
 [ -f "$MODPATH/rkp_fix.sh" ] && set_perm "$MODPATH/rkp_fix.sh" 0 0 0755
 [ -f "$MODPATH/apply_pif.sh" ] && set_perm "$MODPATH/apply_pif.sh" 0 0 0755
 [ -f "$MODPATH/kb_sync.sh" ] && set_perm "$MODPATH/kb_sync.sh" 0 0 0755
+[ -f "$MODPATH/falcon_kbnotify.sh" ] && set_perm "$MODPATH/falcon_kbnotify.sh" 0 0 0755
+# (v3.29) احتساب تاريخ انتهاء الكيبوكس فور التثبيت وكتابته في وصف الوحدتين
+#         + ملف ثابت يقرأه service.sh كاحتياطي (حتى لا يختفي التاريخ أبداً)
+KBEXP_FMT=""
+if [ -f "$MODPATH/falcon_kbnotify.sh" ]; then
+    KBEXP_FMT=$(sh "$MODPATH/falcon_kbnotify.sh" --expiry 2>/dev/null | sed -n 's/^EXPIRY=\([^|]*\).*/\1/p' | head -n 1)
+fi
+case "$KBEXP_FMT" in ''|unknown|unknown*|*[!0-9-]*) KBEXP_FMT="" ;; esac
+if [ -n "$KBEXP_FMT" ]; then
+    printf '%s\n' "$KBEXP_FMT" > "$MODPATH/kb_expiry.txt" 2>/dev/null
+    printf '%s\n' "$KBEXP_FMT" > "$MODPATH/falcon_tricky/kb_expiry.txt" 2>/dev/null
+    for _mp in "$MODPATH/module.prop" "$MODPATH/falcon_tricky/module.prop"; do
+        [ -f "$_mp" ] || continue
+        _md=$(grep -m1 '^description=' "$_mp" 2>/dev/null | cut -d= -f2-)
+        case "$_md" in
+            ''|*"(exp:"*) ;;
+            *) sed -i "s@^description=.*@description=${_md} (exp: ${KBEXP_FMT})@" "$_mp" 2>/dev/null ;;
+        esac
+    done
+fi
 [ -f "$MODPATH/soter_fix.sh" ] && set_perm "$MODPATH/soter_fix.sh" 0 0 0755
 [ -f "$MODPATH/rom_spoof_block.sh" ] && set_perm "$MODPATH/rom_spoof_block.sh" 0 0 0755
 [ -f "$MODPATH/falcon_stealth.sh" ] && set_perm "$MODPATH/falcon_stealth.sh" 0 0 0755
@@ -493,30 +531,25 @@ fi
 #    ⚠️ لا تحمل نسخة ثانية من المحرك — المحرك مملوك للأم وحدها، لأن تشغيله
 #       مرتين يحقن keystore2 مرتين ويجمّد الجهاز بالكامل.
 #
-# (v3.15) الرابط المزدوج أصبح فورياً وحقيقياً في الاتجاهين:
-#    • حذف الأم (playintegrityfix) ⇒ يُحذف مجلد falcon_tricky فوراً (uninstall.sh)
-#    • حذف الملحق (falcon_tricky)  ⇒ يُحذف مجلد الأم فوراً (falcon_tricky/uninstall.sh)
-#    + حماية احتياطية: service.sh في الوحدتين يزيل أي يتيم متبقٍ عند الإقلاع.
+# (v3.29) أُزيل منطق "الرابط المزدوج" وكل علامات remove/disable — كان يُفعّل
+# تنبيه قاعدة الأمان في KernelSU Next. كل وحدة تُدار من مدير الروت مباشرة.
 # ==============================================================================
 # (v3.17-UNIFIED) واجهة الأم القديمة أُزيلت نهائياً — كل الأدوات انتقلت إلى واجهة FALCON TRICKY.
-# نمسح أي نسخة متبقية من الواجهة القديمة (webroot + bridge.js) من الوحدة الحيّة ومن
-# تحديث معلّق، حتى لا يبقى زر WebUI قديم للأم على أي جهاز كان مثبَّتاً عليه إصدار أقدم.
-rm -rf /data/adb/modules/playintegrityfix/webroot /data/adb/modules_update/playintegrityfix/webroot 2>/dev/null || true
-rm -f /data/adb/modules/playintegrityfix/bridge.js /data/adb/modules_update/playintegrityfix/bridge.js 2>/dev/null || true
+# (v3.29) ⛔ لا نحذف أي شيء من مجلدات /data/adb/modules هنا: مسار
+# /data/adb/modules/playintegrityfix هو مرآة المحرك التي ننشئها نحن (بلا module.prop)،
+# ولا يظهر في مدير الروت إلا إذا كان وحدة مستقلة قديمة — وفي هذه الحالة نتركها
+# للمستخدم بدل حذفها (تفادي تنبيه قاعدة الأمان في KernelSU Next).
 
-# (v3.17-FIX) علامة الربط الآمنة: تُصفَّر قبل كل تركيب، ولا تُعاد إلا بعد نجاح
-# نسخ الملحق فعلياً — تستخدمها خدمة الأم كي لا تحذف نفسها بسبب تركيب ناقص.
-rm -f /data/adb/falcon/.ft_linked 2>/dev/null || true
+# (v3.29) لم تعد هناك علامة ربط — لا نكتب أي ملف علامة في مسار الوحدات.
 
 if [ -f "$MODPATH/falcon_tricky/module.prop" ]; then
     FT_DIR="/data/adb/modules/falcon_tricky"
-    rm -rf "$FT_DIR" 2>/dev/null
+    # (v3.29) نسخ فوق الموجود بدل حذف المجلد — لا حذف لأي مجلد وحدة
     mkdir -p "$FT_DIR" 2>/dev/null
     cp -rf "$MODPATH/falcon_tricky/." "$FT_DIR/" 2>/dev/null
     # (v3.15) لو كان لدى مدير الروت نسخة معلّقة في modules_update (تحديث مؤجّل)
     # نُحدّثها بنفس المحتوى حتى لا يُستبدل ملحقنا الجديد بنسخة قديمة عند الإقلاع.
     if [ -d /data/adb/modules_update/falcon_tricky ]; then
-        rm -rf /data/adb/modules_update/falcon_tricky 2>/dev/null
         mkdir -p /data/adb/modules_update/falcon_tricky 2>/dev/null
         cp -rf "$MODPATH/falcon_tricky/." /data/adb/modules_update/falcon_tricky/ 2>/dev/null
         chown -R 0:0 /data/adb/modules_update/falcon_tricky 2>/dev/null
@@ -556,13 +589,8 @@ if [ -f "$MODPATH/falcon_tricky/module.prop" ]; then
         chmod 644 "$_fwi/_index.txt" 2>/dev/null || true
         chmod 755 "$_fwi" 2>/dev/null || true
     fi
-    # (v3.17-FIX) نُثبت علامة الربط فقط بعد نجاح نسخ الملحق فعلياً
-    if [ -f "$FT_DIR/module.prop" ] && [ -d "$FT_DIR/webroot" ]; then
-        mkdir -p /data/adb/falcon 2>/dev/null || true
-        touch /data/adb/falcon/.ft_linked 2>/dev/null || true
-    fi
-    rm -rf "$MODPATH/falcon_tricky" 2>/dev/null
-    ui_print "- 🔗 FALCON TRICKY: وحدة مرئية مربوطة بالأم (حذف أحدهما يحذف الآخر)" ; delay
+    # (v3.29) لا تُكتب أي علامة ربط — الربط التلقائي أُزيل نهائياً.
+    ui_print "- 🔗 FALCON TRICKY: الوحدة المرئية جاهزة (تُدار من مدير الروت مباشرة)" ; delay
 fi
 
 # 2. نشر ملفات التمويه والـ Keybox (إصلاح TEE Attestation)
@@ -595,18 +623,28 @@ if valid_bpif "$BUILTIN_PIF"; then
     ui_print "- 🎭 تم نشر ملف البصمة في مسار المحرك (playintegrityfix)" ; delay
 fi
 
-# (v3.23) لا نطمس كيبوكساً نشطاً صالحاً عند التحديث.
-# مدير المنفذين يختار الأساسي/الثانوي/المرفق ويطبّق ذرياً.
+# (v3.30) عند كل تحديث: يُؤخذ احتياطي من الكيبوكس السابق ثم يُفرض المرفق الجديد.
+# ملاحظة: لا نمسح /data/adb/tricky_store هنا مرة أخرى حتى لا يُفقد target.txt
+# الذي جرى تجهيزه/دمجه في هذا التثبيت. المسح الكامل تم في القسم الأول أعلاه.
+# (الاحتياطي في /data/adb/falcon/.slots/backups — آخر 3 نسخ لكل منفذ.)
 if [ -f "$MODPATH/falcon_keybox.sh" ]; then
-    sh "$MODPATH/falcon_keybox.sh" sync --force >/dev/null 2>&1
+    sh "$MODPATH/falcon_keybox.sh" sync --install >/dev/null 2>&1
 fi
-# احتياطي: لا ننسخ المرفق إلا عند غياب ملف نشط صالح فعلاً.
+# احتياطي أخير: لا ننسخ المرفق يدوياً إلا إذا فشل الفرض وغياب ملف نشط صالح.
 if ! [ -s /data/adb/tricky_store/keybox.xml ] || \
    ! grep -q "<AndroidAttestation" /data/adb/tricky_store/keybox.xml 2>/dev/null; then
     if [ -f "$MODPATH/zygisk/keybox.xml" ]; then
         cp -f "$MODPATH/zygisk/keybox.xml" /data/adb/tricky_store/keybox.xml 2>/dev/null
+        mkdir -p "$FALCON_KB_DIR" 2>/dev/null
+        printf 'bundled\n' > "$FALCON_KB_DIR/.token_source" 2>/dev/null
+        chmod 600 "$FALCON_KB_DIR/.token_source" 2>/dev/null
+        chown root:root "$FALCON_KB_DIR/.token_source" 2>/dev/null
     elif [ -f "$MODPATH/keybox.xml" ]; then
         cp -f "$MODPATH/keybox.xml" /data/adb/tricky_store/keybox.xml 2>/dev/null
+        mkdir -p "$FALCON_KB_DIR" 2>/dev/null
+        printf 'bundled\n' > "$FALCON_KB_DIR/.token_source" 2>/dev/null
+        chmod 600 "$FALCON_KB_DIR/.token_source" 2>/dev/null
+        chown root:root "$FALCON_KB_DIR/.token_source" 2>/dev/null
     fi
 fi
 
@@ -767,7 +805,7 @@ if [ -n "$FALCON_AM" ]; then
     #   حتى تبقى نافذة الروت ظاهرة ولا تُغلق أبداً — فتظهر النافذتان معاً.
     #   إن لم يدعم الجهاز النافذة العائمة نسقط إلى فتح عادي في مهمة مستقلة.
     #   ثم نجرّب الرابط العميق (تطبيق تليجرام الرسمي) ثم الرابط العادي.
-    FALCON_TG_LAUNCH="sleep 5; \"$FALCON_AM\" start --windowingMode 3 -f 0x10000000 -a android.intent.action.VIEW -d \"$FALCON_TG_DEEP\" >/dev/null 2>&1 || \"$FALCON_AM\" start -f 0x10000000 -a android.intent.action.VIEW -d \"$FALCON_TG_DEEP\" >/dev/null 2>&1 || \"$FALCON_AM\" start -f 0x10000000 -a android.intent.action.VIEW -d \"$FALCON_TG_URL\" >/dev/null 2>&1"
+    FALCON_TG_LAUNCH="sleep 1; \"$FALCON_AM\" start --windowingMode 3 -f 0x10000000 -a android.intent.action.VIEW -d \"$FALCON_TG_DEEP\" >/dev/null 2>&1 || \"$FALCON_AM\" start -f 0x10000000 -a android.intent.action.VIEW -d \"$FALCON_TG_DEEP\" >/dev/null 2>&1 || \"$FALCON_AM\" start -f 0x10000000 -a android.intent.action.VIEW -d \"$FALCON_TG_URL\" >/dev/null 2>&1"
     # نتأكد أن busybox المرفق ينفّذ فعلاً (قد يكون الجهاز 32-بت والملف 64-بت)
     FALCON_SETSID=""
     if command -v setsid >/dev/null 2>&1; then
@@ -778,7 +816,7 @@ if [ -n "$FALCON_AM" ]; then
     if [ -n "$FALCON_SETSID" ]; then
         $FALCON_SETSID sh -c "$FALCON_TG_LAUNCH" >/dev/null 2>&1 &
     else
-        ( sleep 5; "$FALCON_AM" start --windowingMode 3 -f 0x10000000 -a android.intent.action.VIEW -d "$FALCON_TG_DEEP" >/dev/null 2>&1 || "$FALCON_AM" start -f 0x10000000 -a android.intent.action.VIEW -d "$FALCON_TG_DEEP" >/dev/null 2>&1 || "$FALCON_AM" start -f 0x10000000 -a android.intent.action.VIEW -d "$FALCON_TG_URL" >/dev/null 2>&1 ) >/dev/null 2>&1 &
+        ( sleep 1; "$FALCON_AM" start --windowingMode 3 -f 0x10000000 -a android.intent.action.VIEW -d "$FALCON_TG_DEEP" >/dev/null 2>&1 || "$FALCON_AM" start -f 0x10000000 -a android.intent.action.VIEW -d "$FALCON_TG_DEEP" >/dev/null 2>&1 || "$FALCON_AM" start -f 0x10000000 -a android.intent.action.VIEW -d "$FALCON_TG_URL" >/dev/null 2>&1 ) >/dev/null 2>&1 &
     fi
 
     ui_print "- ℹ ارجع إلى مدير الروت ثم اضغط «إعادة التشغيل» 🔁" ; delay

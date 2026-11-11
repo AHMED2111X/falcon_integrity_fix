@@ -64,16 +64,9 @@ say() {
 }
 
 reboot_now() {
-    say "🔄 إعادة تشغيل الجهاز الآن..."
-    sync 2>/dev/null
-    # ⚠️ نُطلق إعادة التشغيل في الخلفية حتى لا تعلّق واجهة الويب (WebUI) أبداً.
-    (
-        sleep 2
-        if command -v svc >/dev/null 2>&1; then
-            svc power reboot 2>/dev/null
-        fi
-        command -v reboot >/dev/null 2>&1 && reboot 2>/dev/null
-    ) >/dev/null 2>&1 &
+    # (v3.29) لا إعادة تشغيل تلقائية من داخل السكربت: أمر reboot داخل سكربتات
+    # الوحدة يجعل KernelSU Next يعرض تنبيه «احتمال حدوث حلقة إعادة تشغيل».
+    say "✅ اكتمل الإصلاح — أعد تشغيل الجهاز يدوياً الآن من مدير الروت."
     return 0
 }
 

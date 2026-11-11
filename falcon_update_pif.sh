@@ -33,7 +33,6 @@
 # ==============================================================================
 
 # (v3.22.4) أُزيل set +o standalone: هو خيار BusyBox، وقد ينهي الصدفة بصمت على أندرويد
-printf '[➜] %s\n' "بدء تحديث بصمة Canary..."
 
 MODDIR="${0%/*}"
 [ -n "$MODDIR" ] && [ -d "$MODDIR" ] || MODDIR="/data/adb/modules/falcon_integrity_fix"
@@ -42,22 +41,36 @@ mkdir -p "$WRK" 2>/dev/null
 
 FORCE_MATCH=0
 FORCE_UPDATE=0
+CHECK_ONLY=0
 for A in "$@"; do
     case "$A" in
         -m|--match|match) FORCE_MATCH=1 ;;
         --force|-f) FORCE_UPDATE=1 ;;
+        -c|--check|check) CHECK_ONLY=1 ;;
         -h|--help|help)
-            echo "الاستخدام: sh falcon_update_pif.sh [-m|--match] [--force]"
+            echo "الاستخدام: sh falcon_update_pif.sh [-m|--match] [--force] [-c|--check]"
+            echo "  -c : فحص البصمة الحالية ومقارنتها بأحدث بصمة Canary (بلا أي تغيير)"
             exit 0
             ;;
     esac
 done
 
+if [ "$CHECK_ONLY" = "1" ]; then
+    printf '[➜] %s\n' "فحص بصمة Canary..."
+else
+    printf '[➜] %s\n' "بدء تحديث بصمة Canary..."
+fi
+
 say() { printf '[➜] %s\n' "$1"; }
 ok()  { printf '[✔] %s\n' "$1"; }
 die() {
-    printf '[✖] %s\n' "$1"
-    printf '%s [✖] فشل تحديث البصمة: %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" "$1" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
+    if [ "$CHECK_ONLY" = "1" ]; then
+        printf '[✖] %s\n' "$1"
+        printf '%s [✖] فشل فحص البصمة: %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" "$1" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
+    else
+        printf '[✖] %s\n' "$1"
+        printf '%s [✖] فشل تحديث البصمة: %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" "$1" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
+    fi
     exit 1
 }
 
@@ -327,6 +340,47 @@ if [ -f "$OLD_PROP" ]; then
     OLD_FP=$(grep -m1 '^FINGERPRINT=' "$OLD_PROP" 2>/dev/null | cut -d= -f2 | tr -d '\r')
 fi
 NEW_FP="google/$PRODUCT/$DEVICE:CANARY/$ID/$INCREMENTAL:user/release-keys"
+
+# --- (v3.29) وضع الفحص فقط: عرض الحالة بلا أي تغيير ---
+if [ "$CHECK_ONLY" = "1" ]; then
+    OLD_MODEL=""
+    OLD_SECPATCH=""
+    OLD_REL=""
+    OLD_EXP=""
+    if [ -f "$OLD_PROP" ]; then
+        OLD_MODEL=$(grep -m1 '^MODEL=' "$OLD_PROP" 2>/dev/null | cut -d= -f2 | tr -d '\r')
+        OLD_SECPATCH=$(grep -m1 '^SECURITY_PATCH=' "$OLD_PROP" 2>/dev/null | cut -d= -f2 | tr -d '\r')
+        OLD_REL=$(grep -m1 '^# Canary Released:' "$OLD_PROP" 2>/dev/null | sed 's/^# Canary Released: *//' | tr -d '\r')
+        OLD_EXP=$(grep -m1 '^# Estimated Expiry:' "$OLD_PROP" 2>/dev/null | sed 's/^# Estimated Expiry: *//' | tr -d '\r')
+    fi
+    echo "=== FALCON CANARY CHECK ==="
+    echo "CURRENT_FP=${OLD_FP:-none}"
+    echo "CURRENT_ID=${OLD_ID:-none}"
+    echo "CURRENT_MODEL=${OLD_MODEL:-none}"
+    echo "CURRENT_SECURITY_PATCH=${OLD_SECPATCH:-none}"
+    echo "CURRENT_RELEASED=${OLD_REL:-unknown}"
+    echo "CURRENT_EXPIRY=${OLD_EXP:-unknown}"
+    echo "LATEST_FP=$NEW_FP"
+    echo "LATEST_ID=$ID"
+    echo "LATEST_MODEL=$MODEL"
+    echo "LATEST_DEVICE=$DEVICE"
+    echo "LATEST_SECURITY_PATCH=$SECURITY_PATCH"
+    echo "LATEST_RELEASED=$REL"
+    echo "LATEST_EXPIRY=$EXP"
+    if [ "$OLD_FP" = "$NEW_FP" ]; then
+        echo "STATUS=UP-TO-DATE"
+        ok "البصمة الحالية هي أحدث بصمة Canary ($ID)."
+    elif [ -z "$OLD_FP" ]; then
+        echo "STATUS=NO-FINGERPRINT"
+        printf '[!] %s\n' "لا توجد بصمة مثبتة — استخدم زر التحديث لتثبيت $ID."
+    else
+        echo "STATUS=OUTDATED"
+        printf '[!] %s\n' "البصمة الحالية قديمة — الأحدث: $ID ($MODEL)."
+    fi
+    printf 'FALCON_PIF_CHECK_DONE\n'
+    exit 0
+fi
+
 if [ "$OLD_FP" = "$NEW_FP" ] && [ "$FORCE_UPDATE" != "1" ]; then
     ok "أنت بالفعل على أحدث بصمة Canary ($ID) — لم يُغيَّر أي ملف."
     printf 'FALCON_PIF_UPDATE_DONE\n'

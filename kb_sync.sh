@@ -342,6 +342,15 @@ check_keybox_file() {
     return 0
 }
 
+# (v3.29-FIX2) وسم «مخصص» لأي كيبوكس يأتي من الإنترنت — العبرة بالمصدر لا
+# بالمحتوى، حتى لو كان الملف مطابقاً بايتياً للكيبوكس المرفق مع الإضافة.
+mark_custom_source() {
+    mkdir -p /data/adb/falcon 2>/dev/null
+    printf 'custom\n' > /data/adb/falcon/.token_source 2>/dev/null
+    chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+    chown root:root /data/adb/falcon/.token_source 2>/dev/null
+}
+
 # --- تثبيت الكيبوكس الجديد ---
 install_kb() {
     local d="" PREF="" SLOT=""
@@ -370,6 +379,9 @@ install_kb() {
     cp -f "$1" "$SLOT" 2>/dev/null
     chmod 600 "$SLOT" 2>/dev/null
     chown root:root "$SLOT" 2>/dev/null
+    # (v3.29-FIX) الكيبوكس المجلوب من الإنترنت يُوسم «مخصص» صراحةً،
+    # حتى لو كان مطابقاً بالبايت للكيبوكس المرفق مع الإضافة.
+    mark_custom_source
     say "تم تثبيت الكيبوكس في المنفذ: $SLOT"
     if [ -d "/data/adb/teesim" ]; then
         [ -L "$TARGET2" ] && rm -f "$TARGET2" 2>/dev/null
@@ -433,6 +445,12 @@ fetch_new() {
         fi
         if [ -s "$TARGET" ] && cmp -s "$TMP/cand.xml" "$TARGET"; then
             ok "المثبّت مطابق لأحدث مصدر — لا تغيير"
+            # (v3.29-FIX2) الجلب الصريح من الإنترنت (زر الواجهة) يُوسم «مخصص»
+            # حتى لو كان الملف مطابقاً بايتياً للمرفق: العبرة بمصدر الملف.
+            # لا نطبّق ذلك في وضع --auto حتى لا ينقلب «مرفق» تلقائياً في الخلفية.
+            if [ "$MODE" = "now" ]; then
+                mark_custom_source
+            fi
             return 2
         fi
         if install_kb "$TMP/cand.xml"; then
@@ -588,6 +606,14 @@ case "$FIN" in
     REVOKED)  printf 'REVOKED %s\n' "$(date '+%Y-%m-%d %H:%M')" > "$STATE/kb_state" 2>/dev/null ;;
     *)        [ "$KS_REV" = "1" ] && printf 'REVOKED %s\n' "$(date '+%Y-%m-%d %H:%M')" > "$STATE/kb_state" 2>/dev/null ;;
 esac
+
+# --- (v3.29) تنبيه المستخدم عند توقف/إبطال الكيبوكس ---
+# إشعار نظام بارز يظهر فوق اللعبة/المتصفح — بلا حاجة لفتح مدير الروت.
+KBN_DIR="${0%/*}"
+[ -n "$KBN_DIR" ] && [ -f "$KBN_DIR/falcon_kbnotify.sh" ] || KBN_DIR="/data/adb/modules/falcon_integrity_fix"
+if [ -f "$KBN_DIR/falcon_kbnotify.sh" ]; then
+    sh "$KBN_DIR/falcon_kbnotify.sh" --auto "${FIN:-UNKNOWN}" "$KS_REV" >/dev/null 2>&1
+fi
 
 echo "FALCON_KS_RESULT=${FIN:-UNKNOWN}"
 echo "FALCON_KS_DONE"

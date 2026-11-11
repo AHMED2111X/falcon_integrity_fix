@@ -268,7 +268,7 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 # --- 3.1 (v3.23) تطبيق المنفذ المختار (أساسي/ثانوي/مرفق) قبل Zygote ---
-# مدير المنفذين يختار الأساسي الصالح، ثم الثانوي، ثم المرفق. لا يمس الأساسي.
+# مدير المنفذين يختار الأساسي الصالح، ثم الثانوي، ثم المرفق. لا يستبدل أساسياً صالحاً عند الإقلاع.
 if [ -f "$MODPATH/falcon_keybox.sh" ]; then
     sh "$MODPATH/falcon_keybox.sh" sync --early >/dev/null 2>&1
 else
@@ -278,6 +278,11 @@ else
     elif [ ! -s "$TARGET_FILE" ] || ! grep -q "<AndroidAttestation" "$TARGET_FILE" 2>/dev/null; then
         if [ -s "$MODPATH/keybox.xml" ]; then
             cp -f "$MODPATH/keybox.xml" "$TARGET_FILE" 2>/dev/null
+            # نسخ كيبوكس الإضافة المرفق ⇒ وسم صريح «مرفق» حتى تقرأه كل الأجهزة كذلك.
+            mkdir -p /data/adb/falcon 2>/dev/null
+            printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+            chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+            chown root:root /data/adb/falcon/.token_source 2>/dev/null
         fi
     fi
 fi
@@ -352,6 +357,11 @@ fi
         chcon u:object_r:system_file:s0 "$TARGET_FILE" 2>/dev/null
         # 🔑 (v3.04) نحفظ النسخة المنزّلة ككيبوكس مستخدم دائم حتى لا تُستبدل لاحقاً
         cp -f "$TARGET_FILE" /data/adb/falcon/.token_cache 2>/dev/null
+        # كيبوكس مجلوب من الإنترنت ⇒ «مخصص» صراحةً (حتى لو طابق المرفق بالبايت)
+        mkdir -p /data/adb/falcon 2>/dev/null
+        printf 'custom\n' > /data/adb/falcon/.token_source 2>/dev/null
+        chmod 600 /data/adb/falcon/.token_source 2>/dev/null
+        chown root:root /data/adb/falcon/.token_source 2>/dev/null
         log -t "$LOG_TAG" "تم تحديث Keybox بنجاح وتطبيق سياق SELinux."
     else
         rm -f "$TARGET_FILE.tmp" 2>/dev/null

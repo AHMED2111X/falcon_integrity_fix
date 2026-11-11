@@ -1,0 +1,32 @@
+# FALCON INTEGRITY FIX — قائمة تعارضات المديولات
+# (مستوحاة من Specter conflicts.txt — مُكيَّفة لـ FALCON)
+#
+# صيغة: id|display_name|type|features|scripts
+#
+# type:
+#   aggressive — حذف المديول + تحذير في الوصف (تداخل 100%)
+#   moderate   — تعطيل scripts (rename to .bak), FALCON يغطي كل شيء
+#   passive    — تبديل 우선순위 في WebUI (تداخل جزئي)
+#
+# features: security_patch,target,keybox,pif,boot_hash (مفصولة بفواصل)
+# scripts: مسارات scripts للمديول المت conflicting (مفصولة بفواصل)
+#
+# FALCON itself uses: security_patch, target, keybox, pif, boot_hash (vbmeta)
+
+# --- aggressive (تداخل 100% — حذف) ---
+playintegrityfix|PlayIntegrityFix (osm0sis)|aggressive|security_patch,target,pif|/data/adb/modules/playintegrityfix/post-fs-data.sh,/data/adb/modules/playintegrityfix/service.sh
+Yurikey|Yurikey Manager|aggressive|security_patch|/data/adb/modules/Yurikey/service.sh
+integritybox|IntegrityBox|aggressive|security_patch,target|/data/adb/modules/playintegrityfix/service.sh
+tsupport-advance|TSupport-Advance|aggressive|security_patch,target|/data/adb/modules/tsupport-advance/post-fs-data.sh,/data/adb/modules/tsupport-advance/service.sh
+sensitive_props|Sensitive Props|aggressive||/data/adb/modules/sensitive_props/service.sh
+
+# --- moderate (تعطيل scripts) ---
+TA_utl|Tricky Addon - Update Target List|moderate|boot_hash|/data/adb/modules/TA_utl/prop.sh
+TA_enhanced|Tricky Addon Enhanced|moderate|boot_hash,keybox,security_patch|/data/adb/modules/TA_enhanced/prop.sh
+
+# --- passive (تبديل 우선순위) ---
+zygisk_nohello|NoHello|passive||/data/adb/modules/zygisk_nohello/service.sh
+treat_wheel|TreatWheel|passive|prop_handler|/data/adb/modules/treat_wheel/service.sh
+brene|.BRENE|passive|prop_handler|/data/adb/modules/brene/service.sh,/data/adb/modules/brene/post-fs-data.sh,/data/adb/modules/brene/boot-completed.sh
+teesim|TEESimulator WebUI|passive|security_patch,teesim_mode|
+falcon_tricky|FALCON TRICKY (companion)|passive||

@@ -24,14 +24,14 @@ $VER_NUM = ($Version -replace '^v','')
 
 # --- 1) قائمة الملفات الجذرية المرسلة في الحزمة ---
 $rootFiles = @(
-    'action.sh','apply_pif.sh','banner.png','busybox','classes.dex','clean_install.sh','common_func.sh',
+    'action.sh','apply_pif.sh','banner.png','busybox','classes.dex','common_func.sh',
     'common_setup.sh','custom.pif.json','custom.pif.prop','customize.sh','example.app_replace.list',
-    'falcon_kbcheck.sh','falcon_keybox.sh','falcon_rom_compat.sh','falcon_integrity_diag.sh','falcon_sdcard_cleanup.sh','falcon_stealth.sh','falcon_update_pif.sh',
-    'icon.png','icondump.dex','icons.sh','kb_sync.sh','killpi.sh','migrate.sh','module.prop',
+    'falcon_kbcheck.sh','falcon_kbnotify.sh','falcon_keybox.sh','falcon_rom_compat.sh','falcon_integrity_diag.sh','falcon_sdcard_cleanup.sh','falcon_stealth.sh','falcon_update_pif.sh',
+    'icon.png','icondump.dex','icons.sh','kb_expiry.txt','kb_sync.sh','keybox.xml','killpi.sh','migrate.sh','module.prop',
     'post-fs-data.sh','rkp_fix.sh','rom_spoof_block.sh','security_patch.txt','sepolicy.rule','service.sh',
     'soter_fix.sh','sources.conf','target.txt','uninstall.sh','update.json'
 )
-$subDirs = @('falcon_tricky','tricky','zygisk','META-INF')
+$subDirs = @('falcon_tricky','tricky','zygisk','META-INF','lib','config')
 
 $stage = Join-Path $env:TEMP "falcon_build_$VER_NUM"
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }

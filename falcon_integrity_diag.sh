@@ -109,11 +109,46 @@ diag_keybox() {
         fi
     done
 
-    # هل الكيبوكس النشط هو نفسه المرفق مع الإضافة؟ (المفتاح العلني معرض للإبطال)
-    local bundled="$MODDIR/keybox.xml"
-    if [ -s "$bundled" ] && [ -s "$TS_DIR/keybox.xml" ]; then
-        if cmp -s "$TS_DIR/keybox.xml" "$bundled" 2>/dev/null; then
-            warn "الكيبوكس النشط = الكيبوكس المرفق مع الإضافة (مفتاح علني ⇒ معرض للإبطال)"
+    # هل الكيبوكس النشط من أصل مرفق أم مخصص؟ (المفتاح العلني معرض للإبطال)
+    # نعتمد الوسم الصريح أولاً، ثم المقارنة مع كل مسارات المرفق واللقطة
+    # (بما فيها مرفق الإصدار القديم أثناء الترقية)، مع بديل cksum عند غياب cmp
+    # ومقارنة متطبيعة تتجاهل فروق المسافات/نهايات الأسطر.
+    local bundled="" marker="" kbsrc="" kbpath kbhash kbhash2
+    bundled="$MODDIR/keybox.xml"
+    [ -s "$bundled" ] || bundled="$MODDIR/zygisk/keybox.xml"
+    marker=""
+    [ -s /data/adb/falcon/.token_source ] && marker=$(tr -d ' \t\r\n' < /data/adb/falcon/.token_source 2>/dev/null)
+    if [ -s "$TS_DIR/keybox.xml" ]; then
+        kbsrc="custom"
+        case "$marker" in
+            bundled) kbsrc="bundled" ;;
+            custom)  kbsrc="custom" ;;
+            *)
+                kbhash=$(tr -d ' \t\r\n' < "$TS_DIR/keybox.xml" 2>/dev/null | cksum 2>/dev/null)
+                for kbpath in \
+                    "$bundled" \
+                    "$MODDIR/keybox.xml" \
+                    "$MODDIR/zygisk/keybox.xml" \
+                    /data/adb/modules/falcon_integrity_fix/keybox.xml \
+                    /data/adb/modules/falcon_integrity_fix/zygisk/keybox.xml \
+                    /data/adb/modules_update/falcon_integrity_fix/keybox.xml \
+                    /data/adb/modules_update/falcon_integrity_fix/zygisk/keybox.xml \
+                    /data/adb/falcon/.token_bundle; do
+                    [ -s "$kbpath" ] || continue
+                    if cmp -s "$TS_DIR/keybox.xml" "$kbpath" 2>/dev/null; then
+                        kbsrc="bundled"
+                        break
+                    fi
+                    kbhash2=$(tr -d ' \t\r\n' < "$kbpath" 2>/dev/null | cksum 2>/dev/null)
+                    if [ -n "$kbhash" ] && [ "$kbhash" = "$kbhash2" ]; then
+                        kbsrc="bundled"
+                        break
+                    fi
+                done
+                ;;
+        esac
+        if [ "$kbsrc" = "bundled" ]; then
+            warn "الكيبوكس النشط من أصل مرفق مع الإضافة (مفتاح علني ⇒ معرض للإبطال)"
         else
             ok "الكيبوكس النشط مخصّص (ليس نسخة من المرفق)"
         fi
