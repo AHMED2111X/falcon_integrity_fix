@@ -4,7 +4,7 @@
 that fixes Play Integrity on Android 10 to 17.
 
 [![Latest release](https://img.shields.io/github/v/release/AHMED2111X/falcon_integrity_fix?style=flat-square&label=release)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/latest)
-[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.30.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.30/FALCONINTEGITY_FIX_V3.30.zip)
+[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.30.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.30.2/FALCONINTEGITY_FIX_V3.30.zip)
 [![Telegram](https://img.shields.io/badge/Telegram-@FALCON_KERNEL_PRO-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FALCON_KERNEL_PRO)
 
 ## What it does
@@ -32,8 +32,8 @@ Two separate modules are involved. This repository is the module itself.
 | | |
 | --- | --- |
 | Latest version | **v3.30** — `versionCode 139` |
-| Download | [`FALCONINTEGITY_FIX_V3.30.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.30/FALCONINTEGITY_FIX_V3.30.zip) |
-| Release notes | [v3.30 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.30) |
+| Download | [`FALCONINTEGITY_FIX_V3.30.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.30.2/FALCONINTEGITY_FIX_V3.30.zip) |
+| Release notes | [v3.30 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.30.2) |
 | Telegram | [@FALCON_KERNEL_PRO](https://t.me/FALCON_KERNEL_PRO) |
 
 Flash the ZIP from Magisk, KernelSU, KernelSU Next or APatch, then reboot.
