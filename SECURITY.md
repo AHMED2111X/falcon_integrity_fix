@@ -4,9 +4,9 @@
 
 | Version | Supported |
 | ------- | --------- |
-| v3.29   | ✅ Yes / نعم (latest) |
-| v3.28   | ⚠️ Update recommended / يُنصح بالتحديث |
-| < v3.28 | ❌ No / لا |
+| v3.30   | ✅ Yes / نعم (latest) |
+| v3.29   | ⚠️ Update recommended / يُنصح بالتحديث |
+| < v3.29 | ❌ No / لا |
 
 ## Reporting a Vulnerability (الإبلاغ عن ثغرة أمنية)
 
