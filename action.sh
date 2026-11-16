@@ -262,7 +262,7 @@ SDK_INT="$(pprop DEVICE_INITIAL_SDK_INT)"
 [ -z "$PRODUCT" ] && PRODUCT="$(getprop ro.product.name)"
 [ -z "$MANUFACTURER" ] && MANUFACTURER="$(getprop ro.product.manufacturer)"
 [ -z "$FINGERPRINT" ] && FINGERPRINT="$(getprop ro.build.fingerprint)"
-[ -z "$SECURITY_PATCH" ] && SECURITY_PATCH="2026-09-05"
+[ -z "$SECURITY_PATCH" ] && SECURITY_PATCH="2026-11-05"
 [ -z "$SDK_INT" ] && SDK_INT="32"
 
 step_info "الطراز المزيف    : $MODEL"

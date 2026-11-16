@@ -122,7 +122,7 @@ load_identity() {
         *) TAGS_VAL="release-keys" ;;
     esac
 
-    [ -n "$PATCH_RAW" ] || PATCH_RAW="2026-10-05"
+    [ -n "$PATCH_RAW" ] || PATCH_RAW="2026-11-05"
 }
 
 apply_props() {

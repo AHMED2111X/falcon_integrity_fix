@@ -1,10 +1,10 @@
 # FALCON INTEGRITY FIX
 
-**v3.31 · versionCode 140** — a Magisk / KernelSU / KernelSU Next / APatch module
+**v3.32 · versionCode 141** — a Magisk / KernelSU / KernelSU Next / APatch module
 that fixes Play Integrity on Android 10 to 17.
 
 [![Latest release](https://img.shields.io/github/v/release/AHMED2111X/falcon_integrity_fix?style=flat-square&label=release)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/latest)
-[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.31.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.31/FALCONINTEGITY_FIX_V3.31.zip)
+[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.32.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.32/FALCONINTEGITY_FIX_V3.32.zip)
 [![Telegram](https://img.shields.io/badge/Telegram-@FALCON_KERNEL_PRO-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FALCON_KERNEL_PRO)
 
 ## What it does
@@ -31,20 +31,20 @@ Two separate modules are involved. This repository is the module itself.
 
 | | |
 | --- | --- |
-| Latest version | **v3.31** — `versionCode 140` |
-| Download | [`FALCONINTEGITY_FIX_V3.31.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.31/FALCONINTEGITY_FIX_V3.31.zip) |
-| Release notes | [v3.31 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.31) |
+| Latest version | **v3.32** — `versionCode 141` |
+| Download | [`FALCONINTEGITY_FIX_V3.32.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.32/FALCONINTEGITY_FIX_V3.32.zip) |
+| Release notes | [v3.32 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.32) |
 | Telegram | [@FALCON_KERNEL_PRO](https://t.me/FALCON_KERNEL_PRO) |
 
 Flash the ZIP from Magisk, KernelSU, KernelSU Next or APatch, then reboot.
 
-Devices on **v3.30 / 139** (or any older build) see **v3.31 / 140** as an update:
+Devices on **v3.31 / 140** (or any older build) see **v3.32 / 141** as an update:
 root managers read [`update.json`](https://raw.githubusercontent.com/AHMED2111X/falcon_integrity_fix/main/update.json)
 from `main`.
 
-The bundled keybox in this build was re-fetched from the latest public source and is **not revoked**; its certificate
-expires on **25-11-2026**. No newer public Google-signed keybox has been released yet. After that date use the
-fetch/update button in the module or wait for a new release.
+The bundled keybox in this build is the confirmed working **keybox.tryigit.dev** file and is **not revoked**; its
+certificate expires on **25-11-2026**. No newer public Google-signed keybox has been released yet. After that date
+use the fetch/update button in the module or wait for a new release.
 
 ## Source
 
