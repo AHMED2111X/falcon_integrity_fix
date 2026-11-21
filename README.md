@@ -32,8 +32,8 @@ Two separate modules are involved. This repository is the module itself.
 | | |
 | --- | --- |
 | Latest version | **v3.33** — `versionCode 142` |
-| Download | [`FALCONINTEGITY_FIX_V3.33.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.33/FALCONINTEGITY_FIX_V3.33.zip) |
-| Release notes | [v3.33 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.33) |
+| Download | [`FALCONINTEGITY_FIX_V3.33.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.33.2/FALCONINTEGITY_FIX_V3.33.zip) |
+| Release notes | [v3.33 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.33.2) |
 | Telegram | [@FALCON_KERNEL_PRO](https://t.me/FALCON_KERNEL_PRO) |
 
 Flash the ZIP from Magisk, KernelSU, KernelSU Next or APatch, then reboot.
