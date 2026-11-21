@@ -238,7 +238,7 @@ fi
 
 # --- 2. قراءة بصمة التمويه (PIF) من custom.pif.prop ---
 # ⚠️ (v3.04) كان هذا الزر يكتب «بصمة الجهاز الحقيقية» (Red Magic/OnePlus) فيُتلف
-#    تمويه Play Integrity بالكامل! الآن يقرأ البصمة المزيفة (Pixel 6a) من
+#    تمويه Play Integrity بالكامل! الآن يقرأ البصمة المزيفة (Pixel 11 Pro) من
 #    custom.pif.prop نفسها التي يستخدمها المحرك عند الإقلاع.
 step_item "جاري قراءة بصمة التمويه من custom.pif.prop..."
 

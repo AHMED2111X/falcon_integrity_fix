@@ -30,14 +30,43 @@ TMP="$STATE/tmp"
 BACKUP_DIR="$STATE/backup"
 
 MODE="auto"
+SOURCE_INDEX=""
 for A in "$@"; do
     case "$A" in
         --check|-c|check) MODE="check" ;;
         --now|-n|now)     MODE="now" ;;
         --auto|-a|auto)   MODE="auto" ;;
+        --list|-l|list)   MODE="list" ;;
+        --source=*)       SOURCE_INDEX="${A#--source=}" ;;
+        --source)         : ;;
         --verify=*)       MODE="verify"; VERIFY_FILE="${A#--verify=}" ;;
+        --source\ *)      : ;;
     esac
+    # handle "--source N" form
+    case "$A" in --source) SOURCE_WANT_NEXT=1; continue ;; esac
+    if [ "${SOURCE_WANT_NEXT:-0}" = "1" ]; then
+        SOURCE_INDEX="$A"
+        SOURCE_WANT_NEXT=0
+    fi
 done
+# normalize
+case "$SOURCE_INDEX" in ''|*[!0-9]*) SOURCE_INDEX="" ;; esac
+
+# --list: طباعة فهارس المصادر (لبناء أزرار WebUI) ثم خروج (قبل القفل/الإعداد)
+if [ "$MODE" = "list" ]; then
+    [ -f "$SRC_DEFAULT" ] && SRC_FILE="$SRC_DEFAULT"
+    [ -f "$SRC_FILE" ] || SRC_FILE="$SRC_DEFAULT"
+    n=0
+    while IFS='|' read -r name url hint; do
+        name=$(printf '%s' "$name" | tr -d '\r')
+        case "$name" in ''|'#'*) continue ;; esac
+        url=$(printf '%s' "$url" | tr -d ' \t\r\n')
+        [ -n "$url" ] || continue
+        n=$((n+1))
+        printf '%s\n' "$n"
+    done < "$SRC_FILE"
+    exit 0
+fi
 
 mkdir -p "$STATE" "$CRL_DIR" "$TMP" "$BACKUP_DIR" 2>/dev/null
 
@@ -399,7 +428,7 @@ kill_gms() {
 
 # --- جلب جديد من المصادر: 0=ثُبّت 2=مطابق 1=فشل ---
 fetch_new() {
-    local name="" url="" hint="" cand="" tried=0 s="" st="" bad=""
+    local name="" url="" hint="" cand="" tried=0 s="" st="" bad="" src_idx=0
     # (إصلاح) نسخة الوحدة أولاً — نسخة الحالة القديمة على الجهاز لا تتجاوز تحديثات الإصدار
     [ -f "$SRC_DEFAULT" ] && SRC_FILE="$SRC_DEFAULT"
     [ -f "$SRC_FILE" ] || SRC_FILE="$SRC_DEFAULT"
@@ -410,8 +439,14 @@ fetch_new() {
         url=$(printf '%s' "$url" | tr -d ' \t\r\n')
         hint=$(printf '%s' "$hint" | tr -d ' \t\r\n')
         [ -n "$url" ] || continue
+        src_idx=$((src_idx+1))
+        # --source=N: try only the selected source
+        if [ -n "$SOURCE_INDEX" ] && [ "$src_idx" != "$SOURCE_INDEX" ]; then
+            continue
+        fi
         tried=$((tried+1))
-        say "المصدر $tried: $name"
+        # (v3.33) لا نذكر أسماء المصادر في السجل/الواجهة — أرقام فقط
+        say "المصدر $tried"
         cand="$TMP/cand.bin"
         rm -f "$cand" "$TMP/cand.xml" 2>/dev/null
         if ! dl "$url" "$cand"; then err "فشل التنزيل — المصدر التالي"; continue; fi
@@ -459,6 +494,9 @@ fetch_new() {
         fi
         err "فشل التثبيت — التالي"
     done < "$SRC_FILE"
+    if [ -n "$SOURCE_INDEX" ] && [ "$tried" = "0" ]; then
+        err "المصدر $SOURCE_INDEX غير موجود في sources.conf"
+    fi
     return 1
 }
 

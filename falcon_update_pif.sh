@@ -403,6 +403,7 @@ case "$DEVICE" in
     shiba|husky|akita|tokay|caiman|komodo|comet) SDK_INT=34 ;;
     tegu|stallion) SDK_INT=35 ;;
     frankel|blazer|mustang|rango) SDK_INT=36 ;;
+    grizzly|cubs) SDK_INT=37 ;;
     *) SDK_INT=37 ;;
 esac
 APIL="$SDK_INT"

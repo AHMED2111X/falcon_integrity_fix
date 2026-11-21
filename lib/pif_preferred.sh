@@ -1,6 +1,6 @@
 # FALCON INTEGRITY FIX — PIF Preferred Logic (من Specter، مُكيَّف)
 # ==============================================================================
-# يختار بصمة Canary بناءً على "preferred" order (جهازك → bluejay → oriole → random)
+# يختار بصمة Canary بناءً على "preferred" order (جهازك → grizzly → oriole → random)
 # بدلاً من random صرف — بصمة أكثر استقراراً.
 #
 # التكامل في falcon_update_pif.sh:
@@ -23,7 +23,8 @@ Pixel 9|tokay_beta
 Pixel 9 Pro|caiman_beta
 Pixel 9 Pro XL|komodo_beta
 Pixel 9 Pro Fold|comet_beta
-Pixel 9a|tegu_beta"
+Pixel 9a|tegu_beta
+Pixel 11 Pro|grizzly_beta"
 
 # --- cfg_get (ملف-based) ---
 cfg_get() {
