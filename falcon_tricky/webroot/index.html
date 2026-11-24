@@ -468,7 +468,6 @@
         <button id="btnRkpForce" data-i18n="btnRkpForce"></button>
         <button id="btnCertify" data-i18n="btnCertify"></button>
         <button id="btnSoter" data-i18n="btnSoter"></button>
-        <button id="btnCleanRemove" class="danger" data-i18n="btnCleanRemove"></button>
     </div>
     <div class="row" style="margin-top:8px">
         <button id="btnPifApply" data-i18n="btnPifApply"></button>
@@ -908,9 +907,6 @@ var I18N = {
         btnRkpForce: '🔧 إجبار التزوير (ريد ماجيك)',
         btnCertify: '✅ اعتماد متجر Play',
         btnSoter: '🔐 إصلاح SOTER',
-        btnCleanRemove: '🧹 تنظيف وإزالة',
-        confirmCleanRemove: 'إزالة الوحدتين نهائيًا وإعادة الإقلاع؟',
-        logCleanRemove: 'جاري التنظيف والإزالة…',
         btnPifApply: '🎭 تطبيق البصمة',
         btnCanary: '🔁 تحديث بصمة Canary',
         btnEngineDiag: '🩺 فحص محرك التعتيد',
@@ -1158,9 +1154,6 @@ var I18N = {
         btnRkpForce: '🔧 Force re-provision (Red Magic)',
         btnCertify: '✅ Certify Play Store',
         btnSoter: '🔐 SOTER repair',
-        btnCleanRemove: '🧹 Clean & remove',
-        confirmCleanRemove: 'Remove both modules and reboot?',
-        logCleanRemove: 'Cleaning and removing…',
         btnPifApply: '🎭 Apply PIF fingerprint',
         btnCanary: '🔁 Update Canary fingerprint',
 btnCanaryCheck: '🔎 Check Canary fingerprint',
@@ -1409,9 +1402,6 @@ btnCanaryCheck: '🔎 Check Canary fingerprint',
         btnRkpForce: '🔧 Zorla yeniden sağla (Red Magic)',
         btnCertify: '✅ Play Store sertifikası',
         btnSoter: '🔐 SOTER onarımı',
-        btnCleanRemove: '🧹 Temizle ve kaldır',
-        confirmCleanRemove: 'İki modül kaldırılıp yeniden başlatılsın mı?',
-        logCleanRemove: 'Temizleniyor…',
         btnPifApply: '🎭 PIF parmak izini uygula',
         btnCanary: '🔁 Canary parmak izini güncelle',
 btnCanaryCheck: '🔎 Canary parmak izini denetle',
@@ -1660,9 +1650,6 @@ btnCanaryCheck: '🔎 Canary parmak izini denetle',
         btnRkpForce: '🔧 Принудительный перевыпуск (Red Magic)',
         btnCertify: '✅ Сертификация Play Store',
         btnSoter: '🔐 Ремонт SOTER',
-        btnCleanRemove: '🧹 Очистка и удаление',
-        confirmCleanRemove: 'Удалить оба модуля и перезагрузить?',
-        logCleanRemove: 'Очистка…',
         btnPifApply: '🎭 Применить отпечаток PIF',
         btnCanary: '🔁 Обновить отпечаток Canary',
 btnCanaryCheck: '🔎 Проверить отпечаток Canary',
@@ -3409,17 +3396,6 @@ function maintRun(labelKey, cmd, logName, confirmKey) {
     if (confirmKey) { confirmAction(t(confirmKey), runMaint); } else { runMaint(); }
 }
 
-function cleanRemove() {
-    if (!bridgeAvailable()) { toast(t('logDemoAction')); return; }
-    confirmAction(t('confirmCleanRemove'), function () {
-        logLine(t('logCleanRemove'));
-        sh('sh ' + MAIN_MOD + '/clean_remove.sh', function (ec, out) {
-            if (out === '__TIMEOUT__') { toast(t('logDemoAction')); return; }
-            toast(t('logCleanRemove'));
-        }, 60);
-    });
-}
-
 function rkpDiagnose() {
     if (!bridgeAvailable()) { toast(t('logDemoAction')); return; }
     logLine(tf('logMaintHead', { a: t('btnRkpDiag') }));
@@ -3962,8 +3938,6 @@ $('btnRkpFull').onclick = rkpFull;
 $('btnGmsReset').onclick = gmsReset;
 $('btnRkpForce').onclick = rkpForce;
 $('btnCertify').onclick = certifyPlay;
-$('btnCleanRemove')
-    .onclick = cleanRemove;
 $('btnSoter').onclick = soterRepair;
 $('btnPifApply').onclick = pifApply;
 $('btnCanary').onclick = canaryUpdate;
