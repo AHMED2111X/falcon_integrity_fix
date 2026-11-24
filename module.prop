@@ -1,10 +1,11 @@
 id=falcon_integrity_fix
 name=FALCON INTEGRITY FIX
-version=v3.41
-versionCode=157
+version=v3.42
+versionCode=158
 author=ABUFARID | Telegram:@falcon_kernel
 description=Play Integrity fix for Magisk / KernelSU / KernelSU Next / APatch. TrickyStore OSS keystore engine, PlayIntegrityFork fingerprint spoofing, bundled private device-issued RKP keybox (validated against Google CRL), app hiding, keybox status notifications and the FALCON TRICKY Web UI. Android 10-17.
 banner=banner.png
 actionIcon=icon.png
 webuiIcon=icon.png
+updateJson=https://raw.githubusercontent.com/AHMED2111X/falcon_integrity_fix/main/update.json
 zygisk=true
