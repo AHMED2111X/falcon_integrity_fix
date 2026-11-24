@@ -1,10 +1,10 @@
 # FALCON INTEGRITY FIX
 
-**v3.34 · versionCode 143** — a Magisk / KernelSU / KernelSU Next / APatch module
+**v3.34.1 · versionCode 144** — a Magisk / KernelSU / KernelSU Next / APatch module
 that fixes Play Integrity on Android 10 to 17.
 
 [![Latest release](https://img.shields.io/github/v/release/AHMED2111X/falcon_integrity_fix?style=flat-square&label=release)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/latest)
-[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.34.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.34/FALCONINTEGITY_FIX_V3.34.zip)
+[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.34.1.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.34.1/FALCONINTEGITY_FIX_V3.34.1.zip)
 [![Telegram](https://img.shields.io/badge/Telegram-@FALCON_KERNEL_PRO-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FALCON_KERNEL_PRO)
 
 ## What it does
@@ -31,14 +31,14 @@ Two separate modules are involved. This repository is the module itself.
 
 | | |
 | --- | --- |
-| Latest version | **v3.34** — `versionCode 143` |
-| Download | [`FALCONINTEGITY_FIX_V3.34.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.34/FALCONINTEGITY_FIX_V3.34.zip) |
-| Release notes | [v3.34 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.34) |
+| Latest version | **v3.34.1** — `versionCode 144` |
+| Download | [`FALCONINTEGITY_FIX_V3.34.1.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.34.1/FALCONINTEGITY_FIX_V3.34.1.zip) |
+| Release notes | [v3.34 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.34.1) |
 | Telegram | [@FALCON_KERNEL_PRO](https://t.me/FALCON_KERNEL_PRO) |
 
 Flash the ZIP from Magisk, KernelSU, KernelSU Next or APatch, then reboot.
 
-Devices on **v3.33 / 142** (or any older build) see **v3.34 / 143** as an update:
+Devices on **v3.34 / 143** (or any older build) see **v3.34.1 / 144** as an update:
 root managers read [`update.json`](https://raw.githubusercontent.com/AHMED2111X/falcon_integrity_fix/main/update.json)
 from `main`.
 

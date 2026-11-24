@@ -1,9 +1,9 @@
 id=falcon_tricky
 name=FALCON TRICKY
-version=v3.33
-versionCode=142
+version=v3.34.1
+versionCode=144
 author=ABUFARID | Telegram:@falcon_kernel
-description=⚙️ Engine: Running | Google: 3/3 | 🔑 OK (exp: 25-11-2026)
+description=⚙️ Engine: Running | Google: 3/3 | 🔑 OK (exp: 04-12-2026)
 banner=banner.png
 actionIcon=webroot/icon.png
 webuiIcon=webroot/icon.png
