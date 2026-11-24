@@ -25,12 +25,15 @@ fi
 # --- (v3.40.2) تنظيف النسخ المكررة/المعطوبة بعد الإقلاع (الاحتفاظ بوحدتنا فقط) ---
 DEDUP_LIST="/data/adb/.falcon_dedupe_list"
 : > "$DEDUP_LIST" 2>/dev/null
+MODREAL=$(cd "$MODDIR" 2>/dev/null && pwd -P) || MODREAL="$MODDIR"
 SBB=""
 for P in "$MODDIR/busybox" /data/adb/ksu/bin/busybox /data/adb/magisk/busybox /data/adb/ap/bin/busybox; do
     [ -x "$P" ] && { SBB="$P"; break; }
 done
 for D in /data/adb/modules/falcon_integrity_fix*; do
     [ -d "$D" ] || continue
+    DREAL=$(cd "$D" 2>/dev/null && pwd -P) || DREAL="$D"
+    [ "$DREAL" = "$MODREAL" ] && continue
     [ "$D" = "$MODDIR" ] && continue
     printf '%s\n' "$D" >> "$DEDUP_LIST"
 done
