@@ -24,7 +24,7 @@ $VER_NUM = ($Version -replace '^v','')
 
 # --- 1) قائمة الملفات الجذرية المرسلة في الحزمة ---
 $rootFiles = @(
-    'action.sh','apply_pif.sh','banner.png','busybox','classes.dex','common_func.sh',
+    'action.sh','apply_pif.sh','banner.png','busybox','classes.dex','clean_remove.sh','common_func.sh',
     'common_setup.sh','custom.pif.json','custom.pif.prop','customize.sh','example.app_replace.list',
     'falcon_kbcheck.sh','falcon_kbnotify.sh','falcon_keybox.sh','falcon_rom_compat.sh','falcon_integrity_diag.sh','falcon_sdcard_cleanup.sh','falcon_stealth.sh','falcon_update_pif.sh',
     'icon.png','icondump.dex','icons.sh','kb_expiry.txt','kb_sync.sh','keybox.xml','killpi.sh','migrate.sh','module.prop',
