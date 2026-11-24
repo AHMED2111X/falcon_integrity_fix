@@ -1,10 +1,10 @@
 # FALCON INTEGRITY FIX
 
-**v3.33 · versionCode 142** — a Magisk / KernelSU / KernelSU Next / APatch module
+**v3.34 · versionCode 143** — a Magisk / KernelSU / KernelSU Next / APatch module
 that fixes Play Integrity on Android 10 to 17.
 
 [![Latest release](https://img.shields.io/github/v/release/AHMED2111X/falcon_integrity_fix?style=flat-square&label=release)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/latest)
-[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.33.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.32/FALCONINTEGITY_FIX_V3.33.zip)
+[![Download](https://img.shields.io/badge/download-FALCONINTEGITY_FIX_V3.34.zip-2ea44f?style=flat-square)](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.34/FALCONINTEGITY_FIX_V3.34.zip)
 [![Telegram](https://img.shields.io/badge/Telegram-@FALCON_KERNEL_PRO-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FALCON_KERNEL_PRO)
 
 ## What it does
@@ -31,24 +31,21 @@ Two separate modules are involved. This repository is the module itself.
 
 | | |
 | --- | --- |
-| Latest version | **v3.33** — `versionCode 142` |
-| Download | [`FALCONINTEGITY_FIX_V3.33.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.33.2/FALCONINTEGITY_FIX_V3.33.zip) |
-| Release notes | [v3.33 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.33.2) |
+| Latest version | **v3.34** — `versionCode 143` |
+| Download | [`FALCONINTEGITY_FIX_V3.34.zip`](https://github.com/AHMED2111X/falcon_integrity_fix/releases/download/v3.34/FALCONINTEGITY_FIX_V3.34.zip) |
+| Release notes | [v3.34 release](https://github.com/AHMED2111X/falcon_integrity_fix/releases/tag/v3.34) |
 | Telegram | [@FALCON_KERNEL_PRO](https://t.me/FALCON_KERNEL_PRO) |
 
 Flash the ZIP from Magisk, KernelSU, KernelSU Next or APatch, then reboot.
 
-Devices on **v3.32 / 141** (or any older build) see **v3.33 / 142** as an update:
+Devices on **v3.33 / 142** (or any older build) see **v3.34 / 143** as an update:
 root managers read [`update.json`](https://raw.githubusercontent.com/AHMED2111X/falcon_integrity_fix/main/update.json)
 from `main`.
 
-> **Keybox status (21-11-2026):** every known *public* keybox has been revoked by Google (TAKR 45,
-> Yurikey 70, Droidwin 4.2B, …). This build therefore ships a **device-specific RKP keybox** issued to the
-> developer's own device, verified against Google's revocation list and valid until **01-12-2026**.
-> A revoked keybox cannot pass **Strong Integrity**. v3.33 also replaces the two old fetch buttons with one
-> generic button per source (numbered, no site names): each button fetches from its own source, validates the
-> result against Google's revocation list, and installs it only if it is clean. `rkp_keybox_helper.sh` plus
-> the guide in `docs/RKP_KEYBOX_GUIDE.md` let any user issue and install their own RKP keybox.
+> **Keybox:** this build ships a private, device-specific keybox issued to the developer's own device,
+> verified against Google's revocation list and valid until **04-12-2026**. It is owned by
+> **ABUFARID / @FALCON_KERNEL** and protected against modification. No public keybox source or update
+> method is provided or documented.
 
 ## Source
 

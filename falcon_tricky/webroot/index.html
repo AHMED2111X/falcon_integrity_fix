@@ -460,9 +460,6 @@
 
 <section class="panel">
     <h2 data-i18n="panelMaint"></h2>
-    <div class="row">
-        <div id="kbSourceButtons" class="row" style="flex-wrap:wrap;gap:6px;width:100%;"></div>
-    </div>
     <div class="row" style="margin-top:8px">
         <button id="btnRkpDiag" data-i18n="btnRkpDiag"></button>
         <button id="btnRkpManual" data-i18n="btnRkpManual"></button>
@@ -536,13 +533,6 @@
     <h2 data-i18n="panelMaint"></h2>
     <div class="maint-hint" data-i18n="maintHint"></div>
     <div class="maint-list">
-        <div class="maint-item">
-            <button class="maint-btn" type="button">
-                <span data-i18n="btnKbSources"></span>
-                <i class="mchev">▾</i>
-            </button>
-            <div class="maint-desc" data-i18n="mdKbSources"></div>
-        </div>
         <div class="maint-item">
             <button class="maint-btn" type="button">
                 <span data-i18n="btnRkpDiag"></span>
@@ -761,11 +751,6 @@ var I18N = {
         logBridgeName: '🔌 الجسر: وضع KsuWebUI / MMRL (اسم دالة عامة)',
         logBridgeFn: '🔌 الجسر: وضع KernelSU (دالة مباشرة)',
         btnKeyboxImport: '📥 استيراد كيبوكس',
-        btnKbSourcePrefix: 'مصدر',
-        confirmKbSource: 'جلب كيبوكس من مصدر {a}؟',
-        logKbSourceHead: '📥 جلب كيبوكس من مصدر {a}…',
-        logKbSourceOk: '✅ تم جلب كيبوكس من مصدر {a}',
-        logKbSourceFail: '✖ فشل جلب كيبوكس من المصدر',
         btnCrlCheck: '🩺 فحص الإبطال (CRL)',
         btnGwipe: '💣 مسح شامل لجوجل (الخيار الأخير)',
         gwipeConfirm: '⚠️ المسح الشامل لجوجل:\n\n• يمسح بيانات متجر Play + خدمات جوجل + إطار الخدمات.\n• ⛔ سيتم تسجيل خروجك من حسابات جوجل (ستحتاج إضافتها من جديد).\n• لا تُمس صورك وملفاتك وتطبيقاتك.\n• يُعاد تشغيل الجهاز تلقائياً بعد المسح.\n\nهل أنت متأكد؟',
@@ -820,7 +805,6 @@ var I18N = {
         footerSultan: 'طلب خدمات روت والسوفت وير',
         footerDev: 'أبو فريد — المطوّر',
         maintHint: 'اضغط على أي زر لعرض شرحه بالتفصيل.',
-        mdKbSources: '• جلب كيبوكس من المصادر: يحاول كل مصدر بالترتيب حتى يجد كيبوكساً سليماً (CRL + بنية + مفتاح). اضغط زر "مصدر N" لتجربة مصدر محدد. يحتاج إنترنت.',
         mdRkpDiag: '• تشخيص RKP: يفحص وحدات Remote Key Provisioning المتوفرة، ويقوم بفحص إصدار شهادة التحقق من TEE، ويظهر حالة أداة KmInstallKeybox. لا يعدل أي إعدادات — مجرد عرض حالة الجهاز.',
         mdWvDiag: '• فحص Widevine (قراءة فقط): يعرض مؤشرات مستوى Widevine (L1/L3) من dumpsys، ووجود ملفات مفاتيح DRM (IDM)، وخصائص النظام ذات الصلة. لا يعدّل أي شيء إطلاقاً.',
         mdRkpManual: '• إصلاح RKP اليدوي: ينفذ sch /data/adb/modules/falcon_integrity_fix/rkp_fix.sh manual. يصلح مشاكل الاعتماد عند فشل التلقائي. كل عملية تُظهر سطر نجاح/فشل واضح.',
@@ -915,7 +899,6 @@ var I18N = {
         confirmEssential: 'سيتم حصر قائمة التخفي على الإدخالات الأساسية الثلاثة فقط، ويُظهر كل تطبيق آخر على الجهاز. متابعة؟',
         panelMaint: '🧰 صيانة الوحدة الأم',
         hintMaint: 'أدوات FALCON INTEGRITY FIX — كل عملية محمية بمهلة، والتقدّم يظهر لحظياً في السجل.',
-        btnKbSources: '📥 جلب كيبوكس من المصادر',
         btnRkpDiag: '🔍 فحص مفاتيح RKP',
         btnWvDiag: '📺 فحص Widevine (L1/L3)',
         btnRkpManual: '🛠️ إعادة تزوير RKP',
@@ -1015,11 +998,6 @@ var I18N = {
         logBridgeName: '🔌 Bridge: KsuWebUI / MMRL mode (global function name)',
         logBridgeFn: '🔌 Bridge: KernelSU mode (direct function)',
         btnKeyboxImport: '📥 Import keybox',
-        btnKbSourcePrefix: 'Source',
-        confirmKbSource: 'Fetch keybox from source {a}?',
-        logKbSourceHead: '📥 Fetching keybox from source {a}…',
-        logKbSourceOk: '✅ Keybox fetched from source {a}',
-        logKbSourceFail: '✖ Failed to fetch keybox from source',
         btnCrlCheck: '🩺 Revocation check (CRL)',
         btnGwipe: '💣 Full Google wipe (last resort)',
         gwipeConfirm: '⚠️ Full Google wipe:\n\n• Clears Play Store + Google Play services + Services Framework data.\n• ⛔ You WILL be signed out of Google accounts (you must re-add them).\n• Your photos and apps are untouched.\n• The device reboots automatically after.\n\nAre you sure?',
@@ -1074,7 +1052,6 @@ var I18N = {
         footerSultan: 'Root & Software Services',
         footerDev: 'Abu Farid — Developer',
         maintHint: 'Tap any button to show its full description.',
-        mdKbSources: '• جلب كيبوكس من المصادر: يحاول كل مصدر بالترتيب حتى يجد كيبوكساً سليماً (CRL + بنية + مفتاح). اضغط زر "مصدر N" لتجربة مصدر محدد. يحتاج إنترنت.',
         mdRkpDiag: '• RKP diagnosis: checks the available Remote Key Provisioning modules, inspects the TEE attestation certificate version, and shows the KmInstallKeybox tool state. Changes nothing — a plain device status view.',
         mdWvDiag: '• Widevine check (read-only): shows Widevine level indicators (L1/L3) from dumpsys, DRM (IDM) key-file presence, and related system properties. Modifies nothing at all.',
         mdRkpManual: '• Manual RKP fix: runs sch /data/adb/modules/falcon_integrity_fix/rkp_fix.sh manual. Fixes attestation issues when the automatic pass fails. Every run prints a clear success/failure line.',
@@ -1169,7 +1146,6 @@ var I18N = {
         confirmEssential: 'The hidden list will be reduced to the three essential entries, and every other app becomes visible. Continue?',
         panelMaint: '🧰 Main module tools',
         hintMaint: 'FALCON INTEGRITY FIX tools — every operation is timeout-guarded, and progress appears live in the log.',
-        btnKbSources: '📥 جلب كيبوكس من المصادر',
         btnRkpDiag: '🔍 RKP keys status',
         btnWvDiag: '📺 Widevine Check (L1/L3)',
         btnRkpManual: '🛠️ Re-provision RKP',
@@ -1270,11 +1246,6 @@ btnCanaryCheck: '🔎 Check Canary fingerprint',
         logBridgeName: '🔌 Köprü: KsuWebUI / MMRL modu (genel fonksiyon adı)',
         logBridgeFn: '🔌 Köprü: KernelSU modu (doğrudan fonksiyon)',
         btnKeyboxImport: '📥 Keybox içe aktar',
-        btnKbSourcePrefix: 'Kaynak',
-        confirmKbSource: 'Kaynak {a} üzerinden keybox getirilsin mi?',
-        logKbSourceHead: '📥 Kaynak {a} üzerinden keybox getiriliyor…',
-        logKbSourceOk: '✅ Keybox kaynak {a} üzerinden getirildi',
-        logKbSourceFail: '✖ Kaynaktan keybox getirilemedi',
         btnCrlCheck: '🩺 İptal kontrolü (CRL)',
         btnGwipe: '💣 Tam Google silme (son çare)',
         gwipeConfirm: '⚠️ Tam Google silme:\n\n• Play Store + Google Play hizmetleri + Hizmetler Çerçevesi verilerini siler.\n• ⛔ Google hesaplarından ÇIKIŞ yapılacak (yeniden eklemeniz gerekir).\n• Fotoğraflarınız ve uygulamalarınız korunur.\n• İşlemden sonra cihaz otomatik yeniden başlar.\n\nEmin misiniz?',
@@ -1329,7 +1300,6 @@ btnCanaryCheck: '🔎 Check Canary fingerprint',
         footerSultan: 'Root & Yazılım Hizmetleri',
         footerDev: 'Abu Farid — Geliştirici',
         maintHint: 'Ayrıntılı açıklamayı görmek için bir düğmeye dokunun.',
-        mdKbSources: '• جلب كيبوكس من المصادر: يحاول كل مصدر بالترتيب حتى يجد كيبوكساً سليماً (CRL + بنية + مفتاح). اضغط زر "مصدر N" لتجربة مصدر محدد. يحتاج إنترنت.',
         mdRkpDiag: '• RKP teşhisi: mevcut Remote Key Provisioning modüllerini denetler, TEE onay sertifikası sürümünü inceler ve KmInstallKeybox aracının durumunu gösterir. Hiçbir ayarı değiştirmez — yalnızca cihaz durumu görünümü.',
         mdWvDiag: '• Widevine kontrolü (salt okunur): dumpsys çıktısından Widevine seviye göstergelerini (L1/L3), DRM (IDM) anahtar dosyalarının varlığını ve ilgili sistem özelliklerini gösterir. Hiçbir şeyi değiştirmez.',
         mdRkpManual: '• Elle RKP onarımı: sch /data/adb/modules/falcon_integrity_fix/rkp_fix.sh manual komutunu çalıştırır. Otomatik geçiş başarısız olduğunda onay sorunlarını düzeltir. Her işlem net bir başarı/başarısızlık satırı gösterir.',
@@ -1424,7 +1394,6 @@ btnCanaryCheck: '🔎 Check Canary fingerprint',
         confirmEssential: 'Gizli liste yalnızca üç temel kayda indirilecek ve diğer tüm uygulamalar görünür olacak. Devam?',
         panelMaint: '🧰 Ana modül araçları',
         hintMaint: 'FALCON INTEGRITY FIX araçları — her işlem zaman aşımı korumalı, ilerleme kayıtta canlı görünür.',
-        btnKbSources: '📥 جلب كيبوكس من المصادر',
         btnRkpDiag: '🔍 RKP anahtar durumu',
         btnWvDiag: '📺 Widevine Kontrolü (L1/L3)',
         btnRkpManual: '🛠️ RKP yeniden sağla',
@@ -1525,11 +1494,6 @@ btnCanaryCheck: '🔎 Canary parmak izini denetle',
         logBridgeName: '🔌 Мост: режим KsuWebUI / MMRL (имя глобальной функции)',
         logBridgeFn: '🔌 Мост: режим KernelSU (прямая функция)',
         btnKeyboxImport: '📥 Импорт keybox',
-        btnKbSourcePrefix: 'Источник',
-        confirmKbSource: 'Получить keybox из источника {a}?',
-        logKbSourceHead: '📥 Получение keybox из источника {a}…',
-        logKbSourceOk: '✅ Keybox получен из источника {a}',
-        logKbSourceFail: '✖ Не удалось получить keybox из источника',
         btnCrlCheck: '🩺 Проверка отзыва (CRL)',
         btnGwipe: '💣 Полная очистка Google (крайняя мера)',
         gwipeConfirm: '⚠️ Полная очистка Google:\n\n• Очищает данные Play Store + сервисов Google Play + Services Framework.\n• ⛔ Вы ВЫЙДЕТЕ из аккаунтов Google (нужно добавить их заново).\n• Фото и приложения не затрагиваются.\n• После очистки устройство перезагрузится автоматически.\n\nВы уверены?',
@@ -1584,7 +1548,6 @@ btnCanaryCheck: '🔎 Canary parmak izini denetle',
         footerSultan: 'Root & Software Services',
         footerDev: 'Абу Фарид — разработчик',
         maintHint: 'Нажмите на любую кнопку, чтобы увидеть подробное описание.',
-        mdKbSources: '• جلب كيبوكس من المصادر: يحاول كل مصدر بالترتيب حتى يجد كيبوكساً سليماً (CRL + بنية + مفتاح). اضغط زر "مصدر N" لتجربة مصدر محدد. يحتاج إنترنت.',
         mdRkpDiag: '• Диагностика RKP: проверяет доступные модули Remote Key Provisioning, версию аттестационного сертификата TEE и состояние утилиты KmInstallKeybox. Ничего не изменяет — просто показывает состояние устройства.',
         mdWvDiag: '• Проверка Widevine (только чтение): показывает индикаторы уровня Widevine (L1/L3) из dumpsys, наличие DRM-файлов (IDM) и связанные свойства системы. Ничего не изменяет.',
         mdRkpManual: '• Ручное исправление RKP: выполняет sch /data/adb/modules/falcon_integrity_fix/rkp_fix.sh manual. Исправляет проблемы аттестации, когда автоматический проход не удался. Каждый запуск печатает понятную строку успеха/неудачи.',
@@ -1679,7 +1642,6 @@ btnCanaryCheck: '🔎 Canary parmak izini denetle',
         confirmEssential: 'Список скрытых будет сведён к трём базовым записям, а все остальные приложения станут видимыми. Продолжить?',
         panelMaint: '🧰 Инструменты основного модуля',
         hintMaint: 'Инструменты FALCON INTEGRITY FIX — каждая операция защищена тайм-аутом, прогресс виден в журнале.',
-        btnKbSources: '📥 جلب كيبوكس من المصادر',
         btnRkpDiag: '🔍 Состояние ключей RKP',
         btnWvDiag: '📺 Проверка Widevine (L1/L3)',
         btnRkpManual: '🛠️ Перевыпуск RKP',
@@ -3434,70 +3396,6 @@ function maintRun(labelKey, cmd, logName, confirmKey) {
     if (confirmKey) { confirmAction(t(confirmKey), runMaint); } else { runMaint(); }
 }
 
-var KB_SOURCE_COUNT = 0;
-
-function kbSourceLabel(n) {
-    return (t('btnKbSourcePrefix') || 'مصدر') + ' ' + n;
-}
-
-function renderKbSourceButtons() {
-    var box = $('kbSourceButtons');
-    if (!box) return;
-    // Determine number of sources from kb_sync.sh --list
-    if (!bridgeAvailable()) {
-        box.innerHTML = '';
-        var b = document.createElement('button');
-        b.className = 'amber';
-        b.textContent = t('btnKbSources') || 'جلب كيبوكس من المصادر';
-        b.onclick = function () { toast(t('logDemoAction')); };
-        box.appendChild(b);
-        return;
-    }
-    sh('sh ' + MAIN_MOD + '/kb_sync.sh --list', function (ec, out) {
-        if (out === '__TIMEOUT__') { return; }
-        var txt = String(out || '');
-        var lines = txt.split(/\n/);
-        var idxs = [];
-        for (var i = 0; i < lines.length; i++) {
-            var m = lines[i].trim().match(/^(\d+)/);
-            if (m) idxs.push(parseInt(m[1], 10));
-        }
-        if (idxs.length === 0) { idxs = [1, 2, 3, 4, 5]; }
-        KB_SOURCE_COUNT = idxs.length;
-        box.innerHTML = '';
-        for (var j = 0; j < idxs.length; j++) {
-            (function (n) {
-                var btn = document.createElement('button');
-                btn.className = 'amber';
-                btn.textContent = kbSourceLabel(n);
-                btn.onclick = function () { kbSourceFetch(n); };
-                box.appendChild(btn);
-            })(idxs[j]);
-        }
-    }, 30);
-}
-
-function kbSourceFetch(n) {
-    if (!bridgeAvailable()) { toast(t('logDemoAction')); return; }
-    confirmAction(tf('confirmKbSource', { a: n }), function () { kbSourceFetchRun(n); });
-}
-
-function kbSourceFetchRun(n) {
-    logLine(tf('logKbSourceHead', { a: n }));
-    sh('sh ' + MAIN_MOD + '/kb_sync.sh --now --source=' + n, function (ec, out) {
-        if (out === '__TIMEOUT__') { logLine(t('logKbSourceFail')); toast(t('logKbSourceFail')); return; }
-        var txt = String(out || '');
-        if (txt.indexOf('FALCON_KS_RESULT=OK') !== -1 || txt.indexOf('FALCON_KS_RESULT=NOCHANGE') !== -1) {
-            logLine(tf('logKbSourceOk', { a: n }));
-            toast(tf('logKbSourceOk', { a: n }));
-        } else {
-            logLine(tf('logKbSourceFail'));
-            toast(tf('logKbSourceFail'));
-        }
-        readCore(function () { render(); });
-    }, 180);
-}
-
 function rkpDiagnose() {
     if (!bridgeAvailable()) { toast(t('logDemoAction')); return; }
     logLine(tf('logMaintHead', { a: t('btnRkpDiag') }));
@@ -4034,7 +3932,6 @@ $('btnAutoLog').onclick = readAutoLog;
 $('btnKeyboxImport').onclick = importKeybox;
 $('btnCrlCheck').onclick = checkCrl;
 $('btnGwipe').onclick = googleWipe;
-renderKbSourceButtons();
 $('btnRkpDiag').onclick = rkpDiagnose;
 $('btnRkpManual').onclick = rkpManual;
 $('btnRkpFull').onclick = rkpFull;

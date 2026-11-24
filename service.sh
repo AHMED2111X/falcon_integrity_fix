@@ -9,6 +9,22 @@
 MODPATH="${0%/*}"
 MODDIR="$MODPATH"
 
+# --- (v3.34) حماية الكيبوكس المملوك: بصمة + قراءة فقط + منع التعديل ---
+KB_PROTECT="$MODDIR/keybox.xml"
+KB_SUM="$MODDIR/keybox.sha256"
+if [ -f "$KB_PROTECT" ] && [ -f "$KB_SUM" ]; then
+    EXPECT=$(tr -d ' \t\r\n' < "$KB_SUM" 2>/dev/null)
+    ACTUAL=$(sha256sum "$KB_PROTECT" 2>/dev/null | awk '{print $1}')
+    [ -z "$ACTUAL" ] && ACTUAL=$("${MODDIR}/busybox" sha256sum "$KB_PROTECT" 2>/dev/null | awk '{print $1}')
+    if [ -n "$ACTUAL" ] && [ "$ACTUAL" != "$EXPECT" ]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') ⚠️ KEYBOX MODIFIED - rejected" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
+        chmod 000 "$KB_PROTECT" 2>/dev/null
+    else
+        chmod 444 "$KB_PROTECT" 2>/dev/null
+        chattr +i "$KB_PROTECT" 2>/dev/null
+    fi
+fi
+
 # --- (v3.29) حُذف منطق "الرابط المزدوج" الذي كان يضع علامة remove على وحدتنا
 #     عند حذف FALCON TRICKY. هذا المنطق هو ما يجعل مدير الروت (KernelSU Next)
 #     يعرض تنبيه قاعدة الأمان. الآن كل وحدة تُدار من مدير الروت مباشرة بلا تداخل.
