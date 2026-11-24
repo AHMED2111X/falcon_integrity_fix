@@ -22,6 +22,37 @@ if [ -f "$KB_PROTECT" ] && [ -f "$KB_SUM" ]; then
     fi
 fi
 
+# --- (v3.37) إزالة التثبيتات المكررة لوحدتنا (الاحتفاظ بالأعلى versionCode) ---
+DEDUP_LIST="/data/adb/.falcon_dedupe_list"
+: > "$DEDUP_LIST" 2>/dev/null
+for D in /data/adb/modules/*; do
+    [ -f "$D/module.prop" ] || continue
+    ID=$(grep -m1 '^id=' "$D/module.prop" 2>/dev/null | cut -d= -f2 | tr -d '\r')
+    [ "$ID" = "falcon_integrity_fix" ] || continue
+    VC=$(grep -m1 '^versionCode=' "$D/module.prop" 2>/dev/null | cut -d= -f2 | tr -d '\r')
+    case "$VC" in ''|*[!0-9]*) VC=0 ;; esac
+    printf '%s %s\n' "$VC" "$D" >> "$DEDUP_LIST"
+done
+DUP_COUNT=$(wc -l < "$DEDUP_LIST" 2>/dev/null | tr -d ' ')
+case "$DUP_COUNT" in ''|*[!0-9]*) DUP_COUNT=0 ;; esac
+if [ "$DUP_COUNT" -gt 1 ]; then
+    KEEP="$MODDIR"
+    FOUND=0
+    while read -r VC D; do [ "$D" = "$MODDIR" ] && FOUND=1; done < "$DEDUP_LIST"
+    if [ "$FOUND" = "0" ]; then
+        BEST=0
+        while read -r VC D; do
+            if [ "$VC" -gt "$BEST" ] 2>/dev/null; then BEST=$VC; KEEP="$D"; fi
+        done < "$DEDUP_LIST"
+    fi
+    while read -r VC D; do
+        [ "$D" = "$KEEP" ] && continue
+        echo "$(date '+%Y-%m-%d %H:%M:%S') 🧹 removed duplicate: $D" >> "$MODDIR/falcon_integrity_fix.log" 2>/dev/null
+        rm -rf "$D" 2>/dev/null
+    done < "$DEDUP_LIST"
+fi
+rm -f "$DEDUP_LIST" 2>/dev/null
+
 # --- (v3.29) حُذف منطق "الرابط المزدوج" الذي كان يضع علامة remove على وحدتنا
 #     عند حذف FALCON TRICKY. هذا المنطق هو ما يجعل مدير الروت (KernelSU Next)
 #     يعرض تنبيه قاعدة الأمان. الآن كل وحدة تُدار من مدير الروت مباشرة بلا تداخل.
