@@ -14,25 +14,6 @@ fi
 chcon -R u:object_r:system_file:s0 "$MODPATH" 2>/dev/null || true
 chmod -R 755 "$MODPATH" 2>/dev/null || true
 
-# --- (v3.39) تنظيف شامل قبل التثبيت: لا يُترك أي أثر لوحدة قديمة ---
-ui_print "- 🧹 تنظيف شامل قبل التثبيت..."
-FBB=""
-for P in "$MODPATH/busybox" /data/adb/modules/falcon_integrity_fix/busybox \
-         /data/adb/ksu/bin/busybox /data/adb/magisk/busybox /data/adb/ap/bin/busybox; do
-    [ -x "$P" ] && { FBB="$P"; break; }
-done
-for B in /data/adb/modules /data/adb/modules_update; do
-    [ -d "$B" ] || continue
-    for D in "$B"/falcon_integrity_fix* "$B"/falcon_tricky*; do
-        [ -d "$D" ] || continue
-        [ "$D" = "$MODPATH" ] && continue
-        [ -n "$FBB" ] && "$FBB" find "$D" -type f -exec "$FBB" chattr -i {} \; 2>/dev/null
-        rm -f "$D/remove" 2>/dev/null
-        ui_print "- 🧹 حذف قديم: $D"
-        rm -rf "$D" 2>/dev/null
-    done
-done
-rm -rf /data/adb/falcon_keysync /data/adb/falcon 2>/dev/null
 
 # دالة مساعدة لإضافة مهلة زمنية بسيطة مع ضمان إرجاع قيمة ناجحة
 delay() {
