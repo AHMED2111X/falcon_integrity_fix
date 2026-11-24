@@ -4,9 +4,9 @@
 
 | Version | Supported |
 | ------- | --------- |
-| v3.34.1 | ✅ Yes / نعم (latest) |
-| v3.34   | ⚠️ Update recommended / يُنصح بالتحديث |
-| < v3.34 | ❌ No / لا |
+| v3.35 | ✅ Yes / نعم (latest) |
+| v3.34.2 | ⚠️ Update recommended / يُنصح بالتحديث |
+| < v3.34.2 | ❌ No / لا |
 
 ## Reporting a Vulnerability (الإبلاغ عن ثغرة أمنية)
 
