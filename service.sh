@@ -52,6 +52,22 @@ while IFS= read -r D; do
 done < "$DEDUP_LIST"
 rm -f "$DEDUP_LIST" 2>/dev/null
 
+# --- (v3.43) فرض الكيبوكس المرفق عند الإقلاع ما لم يختر المستخدم كيبوكساً مخصصاً ---
+KB_SRC_BOOT="$MODDIR/keybox.xml"
+SRC_TAG=$(tr -d ' \t\r\n' < /data/adb/falcon/.token_source 2>/dev/null)
+if [ -s "$KB_SRC_BOOT" ] && [ "$SRC_TAG" != "custom" ]; then
+    for KBDIR in /data/adb/tricky_store /data/adb/teesim /data/misc/keystore/omk; do
+        mkdir -p "$KBDIR" 2>/dev/null
+        KBP="$KBDIR/keybox.xml"
+        [ -f "$KBP" ] && cmp -s "$KB_SRC_BOOT" "$KBP" && continue
+        cp -f "$KB_SRC_BOOT" "$KBP" 2>/dev/null
+        chmod 644 "$KBP" 2>/dev/null
+        chown 0:0 "$KBP" 2>/dev/null
+        chcon u:object_r:system_file:s0 "$KBP" 2>/dev/null
+    done
+    printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+fi
+
 # --- (v3.29) حُذف منطق "الرابط المزدوج" الذي كان يضع علامة remove على وحدتنا
 #     عند حذف FALCON TRICKY. هذا المنطق هو ما يجعل مدير الروت (KernelSU Next)
 #     يعرض تنبيه قاعدة الأمان. الآن كل وحدة تُدار من مدير الروت مباشرة بلا تداخل.

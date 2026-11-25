@@ -25,11 +25,18 @@ for B in /data/adb/modules /data/adb/modules_update; do
     fi
 done
 
-# 2) (v3.29) لا نضع علامة remove على مجلد الإضافة الأم — هذا الكود كان
-#    يُفعّل تنبيه قاعدة الأمان في KernelSU Next ("تعطيل وحدات أخرى").
-#    إزالة الأم تتم من مدير الروت مباشرة.
+# 2) (v3.47) إزالة مزدوجة: حذف الوحدة الأم فعلياً (بلا علامة remove،
+#    تفادياً لتنبيه قاعدة الأمان في KernelSU Next).
+if [ "${FALCON_FROM_MAIN:-0}" != "1" ]; then
+    for B in /data/adb/modules /data/adb/modules_update; do
+        [ -d "$B/$MAIN_ID" ] && rm -rf "$B/$MAIN_ID" 2>/dev/null
+    done
+fi
 
-# 3) بيانات الملحق (أرشيف الأيقونات المستخرجة من تطبيقات الجهاز)
+# 3) إلغاء تثبيت تطبيق FALCON TRICKY (APK)
+pm uninstall com.falcon.tricky >/dev/null 2>&1 || true
+
+# 4) بيانات الملحق (أرشيف الأيقونات المستخرجة من تطبيقات الجهاز)
 rm -rf /data/adb/falcon_icons 2>/dev/null
 
 exit 0

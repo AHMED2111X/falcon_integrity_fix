@@ -228,11 +228,8 @@ falcon_kb_copy() {
     falcon_kb_ours "$1" && return 1
     falcon_kb_bundle "$1" && return 1
     cp -f "$1" "$FALCON_KB_USER" 2>/dev/null || return 1
-    # كيبوكس خارجي (من إضافة قديمة/ذاكرة الهاتف) ⇒ مخصص
-    mkdir -p "$FALCON_KB_DIR" 2>/dev/null
-    printf 'custom\n' > "$FALCON_KB_DIR/.token_source" 2>/dev/null
-    chmod 600 "$FALCON_KB_DIR/.token_source" 2>/dev/null
-    chown root:root "$FALCON_KB_DIR/.token_source" 2>/dev/null
+    # (v3.43) نحتفظ بالنسخة القديمة احتياطياً فقط — لا نوسمها custom أبداً:
+    # الكيبوكس المرفق هو المرجع الوحيد عند التثبيت/التحديث على كل الأجهزة.
     return 0
 }
 
@@ -307,6 +304,26 @@ if [ -f "$MODPATH/falcon_keybox.sh" ]; then
     chown root:root "$TS_DIR" 2>/dev/null
     # sync --install يفرض المرفق الآن على المسار النشط والمنفذ الأساسي.
     sh "$MODPATH/falcon_keybox.sh" sync --install >/dev/null 2>&1
+fi
+
+# --- (v3.43) فرض جذري: الكيبوكس المرفق على كل مسارات المحركات ---
+FKB="$MODPATH/keybox.xml"
+if [ -s "$FKB" ]; then
+    for KD in /data/adb/tricky_store /data/adb/teesim /data/misc/keystore/omk; do
+        mkdir -p "$KD" 2>/dev/null
+        KP="$KD/keybox.xml"
+        cp -f "$FKB" "$KP" 2>/dev/null
+        chmod 644 "$KP" 2>/dev/null
+        chown 0:0 "$KP" 2>/dev/null
+        chcon u:object_r:system_file:s0 "$KP" 2>/dev/null
+    done
+    cp -f "$FKB" /data/adb/falcon/.token_cache 2>/dev/null
+    cp -f "$FKB" /data/adb/falcon/.token_bundle 2>/dev/null
+    chmod 600 /data/adb/falcon/.token_cache /data/adb/falcon/.token_bundle 2>/dev/null
+    printf 'bundled\n' > /data/adb/falcon/.token_source 2>/dev/null
+    printf 'auto\n' > /data/adb/falcon/.slots/preferred 2>/dev/null
+    chmod 600 /data/adb/falcon/.token_source /data/adb/falcon/.slots/preferred 2>/dev/null
+    ui_print "- 🔑 كيبوكس الإضافة مُفروض على كل المسارات (TrickyStore / TEESim / OMK)." ; delay
 fi
 if [ -s /data/adb/tricky_store/keybox.xml ] && \
    grep -q "<AndroidAttestation" /data/adb/tricky_store/keybox.xml 2>/dev/null; then
@@ -821,6 +838,19 @@ if [ -n "$FALCON_AM" ]; then
     fi
 
     ui_print "- ℹ ارجع إلى مدير الروت ثم اضغط «إعادة التشغيل» 🔁" ; delay
+fi
+
+# --- (v3.44) تثبيت تطبيق FALCON TRICKY (نفس طريقة HMA-OSS) ---
+FM_APK="$MODPATH/falcon_tricky/manager.apk"
+FM_PKG="com.falcon.tricky"
+if [ -f "$FM_APK" ]; then
+    if pm path "$FM_PKG" >/dev/null 2>&1; then
+        pm install -r --user 0 "$FM_APK" >/dev/null 2>&1
+        ui_print "- 🔄 تحديث تطبيق FALCON TRICKY." ; delay
+    else
+        pm install --user 0 "$FM_APK" >/dev/null 2>&1
+        ui_print "- 📱 تثبيت تطبيق FALCON TRICKY." ; delay
+    fi
 fi
 
 true

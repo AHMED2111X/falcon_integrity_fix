@@ -82,4 +82,20 @@ rm -f /data/adb/falcon_online_count /data/adb/falcon_known_packages.txt \
       /data/adb/falcon/vbmeta_hash 2>/dev/null
 rm -rf /data/adb/falcon_keysync /data/adb/falcon/crl 2>/dev/null
 
+# --- (v3.47) إزالة مزدوجة: حذف الملحق FALCON TRICKY مع الوحدة الأم ---
+# نستدعي سكربت تنظيف الملحق ثم نحذف مجلده فعلياً من المسارين.
+# علم FALCON_FROM_COMPANION يمنع الحلقات التكرارية عند الحذف من الجهة الأخرى.
+if [ "${FALCON_FROM_COMPANION:-0}" != "1" ]; then
+    for B in /data/adb/modules /data/adb/modules_update; do
+        if [ -d "$B/falcon_tricky" ]; then
+            if [ -f "$B/falcon_tricky/uninstall.sh" ]; then
+                FALCON_FROM_MAIN=1 sh "$B/falcon_tricky/uninstall.sh" >/dev/null 2>&1 || true
+            fi
+            rm -rf "$B/falcon_tricky" 2>/dev/null
+        fi
+    done
+    # إلغاء تثبيت تطبيق FALCON TRICKY (APK)
+    pm uninstall com.falcon.tricky >/dev/null 2>&1 || true
+fi
+
 exit 0
